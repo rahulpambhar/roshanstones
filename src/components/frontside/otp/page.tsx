@@ -6,13 +6,13 @@ import { errorToast, successToast } from '@/components/toster';
 import axios from "axios";
 import { apiUrl } from "../../../../env";
 
-const OTPInputGroup = ({ setInputValues, inputValues, orderID, setOTP, timer, setMsg, Msg }) => {
+const OTPInputGroup = ({ setInputValues, inputValues, orderID, setOTP, timer, setMsg, Msg }:any) => {
 
 
     const dispatch = useAppDispatch();
 
-    const handleInputChange = (inputId, value) => {
-        timer && setInputValues((prevInputValues) => ({
+    const handleInputChange = (inputId:any, value:any) => {
+        timer && setInputValues((prevInputValues:any) => ({
             ...prevInputValues,
             [inputId]: value,
         }));
@@ -112,10 +112,10 @@ const OTPInputGroup = ({ setInputValues, inputValues, orderID, setOTP, timer, se
     );
 }
 
-const OTPInput = ({ id, previousId, nextId, value, onValueChange, handleSubmit }) => {
-    const handleKeyUp = (e) => {
+const OTPInput = ({ id, previousId, nextId, value, onValueChange, handleSubmit }:any) => {
+    const handleKeyUp = (e:any) => {
         if (e.keyCode === 8 || e.keyCode === 37) {
-            const prev = document.getElementById(previousId);
+            const prev :any= document.getElementById(previousId);
             if (prev) {
                 prev.select();
             }
@@ -125,7 +125,7 @@ const OTPInput = ({ id, previousId, nextId, value, onValueChange, handleSubmit }
             (e.keyCode >= 96 && e.keyCode <= 105) ||
             e.keyCode === 39
         ) {
-            const next = document.getElementById(nextId);
+            const next :any= document.getElementById(nextId);
             if (next) {
                 next.select();
                 const inputGroup = document.getElementById('OTPInputGroup');
@@ -147,7 +147,7 @@ const OTPInput = ({ id, previousId, nextId, value, onValueChange, handleSubmit }
             type="text"
             className={Styles.DigitInput}
             value={value}
-            maxLength="1"
+            maxLength={1}
             onChange={(e) => onValueChange(id, e.target.value)}
             onKeyUp={handleKeyUp}
         />

@@ -1,6 +1,6 @@
 import axios from "axios";
 import { NextResponse } from "next/server";
-import { prisma } from "../../../prisma/prismaClient";
+import  prisma  from "../../../../../prisma/prismaClient";
 import { PrismaClient } from "@prisma/client";
 import { hashSync, genSaltSync } from "bcrypt";
 import { writeFile } from "fs/promises";
@@ -13,7 +13,6 @@ import twilio from "twilio";
 const twilioPharse = "Y196Y5G4X93JDVGZTGDHCZ4M"
 const accountSid = "AC0e052bd904a903e8a0f93f7db125bd86";
 const authToken = "4a476f0a099f0e598df00b5d9663955d";
-const prisma = new PrismaClient();
 
 export async function POST(request: Request) {
 

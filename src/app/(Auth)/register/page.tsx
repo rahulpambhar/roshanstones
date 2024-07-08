@@ -156,7 +156,7 @@ const RegisterComponents = () => {
                                 </div>
                                 <div className="">
                                     <button className="bg-black text-white font-bold cursor-pointer px-6 py-4 hover:shadow-2xl w-full text-2xl" type="submit">
-                                        {loader ? <Loader type="spinner-default" bgColor="white" color="white" size={50} /> : "Register"}
+                                        {/* {loader ? <Loader type="spinner-default" bgColor="white" color="white" size={50} /> : "Register"} */}
                                     </button>
                                 </div>
                             </Form>
@@ -165,9 +165,9 @@ const RegisterComponents = () => {
                     </Formik>
 
                     <div className="text-center mt-3">
-                        <button onClick={() => dispatch(isLoginModel(!isLoginModelOpen))} className="fontFamily">
+                        {/* <button onClick={() => dispatch(isLoginModel(!isLoginModelOpen))} className="fontFamily">
                             Already have an account? <span className="underline">Login</span>
-                        </button>
+                        </button> */}
                     </div>
                 </div>
             </div>
