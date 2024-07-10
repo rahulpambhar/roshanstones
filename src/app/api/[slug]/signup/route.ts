@@ -40,7 +40,7 @@ export async function POST(request: Request) {
   try {
     if (type === "add" && email && mobile) {
 
-      const user = await prisma.user.findFirst({
+      const user = await prisma?.user?.findFirst({
         where: {
           OR: [{ email }, { mobile }],
         },

@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import toast, { Toaster } from 'react-hot-toast';
 import { Providers } from "./redux/provider";
 import { AuthProvider } from '@/providers/Provider';
 
@@ -25,7 +24,6 @@ export default function RootLayout({ children, }: Readonly<{ children: React.Rea
       </head>
       <body className={inter.className}>
 
-        <Toaster />
         <Providers >
           <AuthProvider>
             {children}

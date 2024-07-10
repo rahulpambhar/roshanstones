@@ -29,7 +29,7 @@ async function getProductReviewsWithAvg(id: string) {
                 }
             }
         }),
-        prisma.review.aggregate({
+        prisma?.review?.aggregate({
             where: {
                 productId: id,
             },

@@ -152,7 +152,7 @@ model Products {
     price        Float?
     hsn          String?
     discount     Int?
-    DiscountType DiscountType
+    discountType DiscountType
     description  String?
 
     image      String[]

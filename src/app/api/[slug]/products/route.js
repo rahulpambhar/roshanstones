@@ -5,7 +5,7 @@ import { parse } from "url";
 import authOptions from "../../auth/[...nextauth]/auth";
 import { getServerSession } from "next-auth";
 import prisma from "../../../../../prisma/prismaClient";
-import { getproductList } from "./functions";
+import { getproductList ,getCategoryProducts} from "./functions";
 
 
 export async function POST(request) {
@@ -35,14 +35,16 @@ export async function POST(request) {
     const batchNo = formData.get("batchNo");
     const uid = formData.get("uid");
     const price = formData.get("price");
-    const discountedPrice = formData.get("discountedPrice");
     const discount = formData.get("discount");
     const description = formData.get("description");
     const brand = formData.get("brand");
-    const countInStock = formData.get("countInStock");
+    const qty = formData.get("qty");
     const avgRating = formData.get("avgRating");
     const numReviews = formData.get("numReviews");
     const type = formData.get("type");
+    const discountType = formData.get("discountType");
+    const hsn = formData.get("hsn");
+    console.log('hsn::: ', hsn);
     const productImages = formData.getAll("image");
     const video = formData.get("video");
     const imageIndex = formData.get("imageIndex");
@@ -96,11 +98,12 @@ export async function POST(request) {
             uid,
             name,
             price: Number(price),
-            discountedPrice: Number(discountedPrice),
+            hsn,
             discount: Number(discount),
+            discountType,
             description,
             brand,
-            countInStock: Number(countInStock),
+            qty: Number(qty),
             image: data?.images,
             video: data?.videoName,
             userId,
@@ -133,7 +136,6 @@ export async function POST(request) {
             id: productsId,
           },
         });
-
 
         data.images = products.image;
         data.videoName = products.video;
@@ -185,11 +187,10 @@ export async function POST(request) {
             uid,
             name,
             price: Number(price),
-            discountedPrice: Number(discountedPrice),
             discount: Number(discount),
             description,
             brand,
-            countInStock: Number(countInStock),
+            qty: Number(qty),
             image: data?.images,
             video: data?.videoName,
           },
@@ -222,7 +223,7 @@ export async function POST(request) {
 export async function GET(request) {
   try {
     const { query } = parse(request.url, true);
-    const { id, slug } = query;
+    const { id, slug, categoryId } = query;
     let limit = parseInt(query?.limit) || 10
     let page = parseInt(query?.page) - 1 || 0
     let offset = page * limit;
@@ -252,6 +253,7 @@ export async function GET(request) {
       });
     } else {
       if (slug === "getproductList") {
+
         const res = await getproductList(request)
         const { st, limit, current_page, total_pages, data, msg } = res;
 
@@ -273,7 +275,29 @@ export async function GET(request) {
           msg,
         })
 
+      } else if (slug === "getCategoryProducts") {
+        const res = await getCategoryProducts(request)
+        const { st, limit, current_page, total_pages, data, msg } = res;
+
+        if (!res || st === false) {
+          return NextResponse.json({
+            st: false,
+            data: [],
+            msg: "Invalid response from getAllproducts",
+          });
+        }
+
+        return NextResponse.json({
+          st,
+          limit,
+          current_page,
+          total_pages,
+          data,
+          msg,
+        })
+
       }
+
 
     }
   } catch (error) {

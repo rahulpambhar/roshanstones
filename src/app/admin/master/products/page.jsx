@@ -1,8 +1,9 @@
 'use client';
 // import { dataNotFound } from "@/assets";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import Breadcrumb from "@/components/admin/breadcrumb";
+import { NumericFormat } from "react-number-format";
 
 import ReactPaginate from "react-paginate";
 import { dataNotFound, } from "../../../../../public/assets";
@@ -14,6 +15,7 @@ import { successToast, errorToast } from "../../../../components/toster/index";
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchCategories } from '../../../redux/slices/categorySlice';
 import Select from 'react-select';
+import toast from "react-hot-toast";
 // import { ProductsData } from "@/components/frontside/DummyData";
 
 
@@ -34,19 +36,23 @@ export default function BuyHistory() {
     const [currentPage, setCurrentPage] = useState(0);
     const [deleteId, setDeleteId] = useState([]);
     const [deleteToggle, setDeleteToggle] = useState(false);
+    const [boolGetfilterCategory, setBoolGetfilterCategory] = useState(false);
     const [subCatOptions, setSubCatOptions] = useState([]);
     const dispatch = useDispatch();
     const categories = useSelector((state) => state.categories.categories);
     const maxDiscount = 30
+
+
     const [addProductData, setAddProductData] = useState({
         name: "",
         batchNo: "",
         uid: "",
         price: 0,
+        han: 0,
         discountedPrice: 0,
         discount: 0,
         brand: "",
-        countInStock: 0,
+        qty: 0,
         description: "",
         avgRating: 0,
         numReviews: 0,
@@ -54,6 +60,7 @@ export default function BuyHistory() {
         video: null,
         categoryId: "",
         subCategoryId: "",
+        discountType: "PERCENTAGE",
         type: "",
     });
 
@@ -65,7 +72,7 @@ export default function BuyHistory() {
     const addOrUpdateProduct = async (e) => {
         e.preventDefault();
         setIsLoading(true);
-        const { categoryId, subCategoryId, name, batchNo, uid, price, description, discount, image, video, discountedPrice, brand, countInStock, type } = addProductData
+        const { categoryId, subCategoryId, name, batchNo, uid, price, description, discount, image, video, discountedPrice, brand, qty, type, hsn, discountType } = addProductData
         if (categoryId === "" && type === "add") {
             errorToast("Please select category");
             setIsLoading(false);
@@ -101,8 +108,8 @@ export default function BuyHistory() {
             errorToast("enter brand")
             setIsLoading(false);
             return
-        } else if (countInStock === 0) {
-            errorToast("enter countInStock")
+        } else if (qty === 0) {
+            errorToast("enter qty")
             setIsLoading(false);
             return
         } else if (image === null && type === "add") {
@@ -129,14 +136,16 @@ export default function BuyHistory() {
             formData.append("discount", discount);
             formData.append("description", description);
             formData.append("brand", brand);
-            formData.append("countInStock", countInStock);
+            formData.append("discountType", discountType);
+            formData.append("hsn", hsn);
+            formData.append("qty", qty);
 
             if (type === "add") {
                 for (const x of image) {
                     formData.append('image', x);
                 }
             } else {
-                for (const x of updateImages.image) {
+                for (const x of updateImages) {
                     formData.append('image', x);
                 }
                 formData.append("updateImageIds", updateImageIds);
@@ -149,30 +158,39 @@ export default function BuyHistory() {
             let response = await axios.post(`${apiUrl}/admin/products`, formData);
 
             if (response.data.st === true) {
-                // successToast(response.data.msg);
                 setIsLoading(false);
-                // getproductList()
+                getproductList()
                 if (addProductData.type === "update") {
-                    // setModelToggle(false);
-                    // setAddProductData({
-                    //     name: "",
-                    //     batchNo: "",
-                    //     uid: "",
-                    //     price: 0,
-                    //     discountedPrice: 0,
-                    //     discount: 0,
-                    //     brand: "",
-                    //     countInStock: 0,
-                    //     description: "",
-                    //     avgRating: 0,
-                    //     numReviews: 0,
-                    //     image: null,
-                    //     video: null,
-                    //     categoryId: "",
-                    //     subCategoryId: "",
-                    //     type: "",
-                    // });
+                    toast.success(response.data.msg);
+                    setModelToggle(false);
+                    setAddProductData({
+                        name: "",
+                        batchNo: "",
+                        uid: "",
+                        price: 0,
+                        han: 0,
+                        discountedPrice: 0,
+                        discount: 0,
+                        brand: "",
+                        qty: 0,
+                        description: "",
+                        avgRating: 0,
+                        numReviews: 0,
+                        image: null,
+                        video: null,
+                        categoryId: "",
+                        subCategoryId: "",
+                        discountType: "PERCENTAGE",
+                        type: "",
+                    });
+                    setModelToggle(false);
+                    setDeleteId([]);
+                    setUpdateImageIds([])
+                    setProductId("")
+                    setUpdateImages({})
                 } else {
+                    toast.success(response.data.msg);
+                    setModelToggle(false);
                     setAddProductData({
                         name: "",
                         batchNo: "",
@@ -181,7 +199,7 @@ export default function BuyHistory() {
                         discountedPrice: 0,
                         discount: 0,
                         brand: "",
-                        countInStock: 0,
+                        qty: 0,
                         description: "",
                         avgRating: 0,
                         numReviews: 0,
@@ -189,8 +207,11 @@ export default function BuyHistory() {
                         video: null,
                         categoryId: "",
                         subCategoryId: "",
+                        discountType: "",
+                        hsn: "",
                         type: "add",
                     });
+
                 }
             } else {
                 errorToast(response.data.msg);
@@ -216,7 +237,7 @@ export default function BuyHistory() {
         }
     };
 
-    const deleteSubCategory = () => {
+    const deleteProducts = () => {
         setIsLoading(true);
 
         try {
@@ -262,7 +283,7 @@ export default function BuyHistory() {
 
     const getfilterCategory = async () => {
         try {
-            let response = await axios.get(`${apiUrl}/admin/subCategory?page=${page}&limit=${perPage}&id=${selectFilter}`);
+            let response = await axios.get(`${apiUrl}/admin/products?page=${page}&limit=${perPage}&categoryId=${selectFilter}&slug=getCategoryProducts`);
 
             if (response?.data.data) {
                 setData(response?.data?.data);
@@ -310,10 +331,13 @@ export default function BuyHistory() {
         getproductList();
     }, [perPage, page,]);
 
-    // useEffect(() => {
-    //     getfilterCategory()
-    // }, [selectFilter]);
-
+    useEffect(() => {
+        if (boolGetfilterCategory === true) {
+            getfilterCategory()
+        }else{
+            setBoolGetfilterCategory(true)
+        }
+    }, [selectFilter]);
 
     return (
         <div className="container">
@@ -329,8 +353,7 @@ export default function BuyHistory() {
                     <option value={20}>20 per page</option>
                 </select>
                 <div className="flex gap-5  ">
-                    <button type="button" className="filter-btn flex gap-1"
-                    >
+                    <button type="button" className="filter-btn flex gap-1">
                         Add
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -416,7 +439,7 @@ export default function BuyHistory() {
                     <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                         <tr>
                             <th scope="col" className="px-6 py-3">
-                                Id
+                                Product Id
                             </th>
                             <th scope="col" className="px-6 py-3">
                                 Name
@@ -441,681 +464,603 @@ export default function BuyHistory() {
                             </th>
                         </tr>
                     </thead>
-                </table>
-                <tbody >
-                    {
-                        data.length > 0 ? data?.map((item, index) => (
-                            <tr key={item.id} className="bg-gray-200  border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600">
 
-                                <th scope="row" className="flex items-center px-6  text-gray-900 whitespace-nowrap dark:text-white">
-                                    <h6 className="font-normal text-gray-500">{item?.id}</h6>
-                                </th>
-                                <th scope="row" className="flex items-center px-6  text-gray-900 whitespace-nowrap dark:text-white">
-                                        <Image
-                                            className="small-img"
-                                            width={100}
-                                            height={100}
-                                            src={`/products/${item?.image[0]}`}
-                                            alt=""
+                    <tbody >
+                        {
+                            data.length > 0 ? data?.map((item, index) => (
+                                <tr key={item.id} className="bg-gray-200  h-[20px] border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600">
+
+                                    <th scope="row" className="flex items-center px-6  text-gray-900 whitespace-nowrap dark:text-white">
+                                        <h6 className="font-normal text-gray-500">{`${item?.id?.slice(0, 3)}...${item?.id.slice(-4)}`}</h6>
+
+                                    </th>
+                                    <td className="px-6 py-3">
+                                        <div className="font-normal text-gray-500">{item?.name}</div>
+                                    </td>
+                                    <td className=" px-6 ">
+                                        {
+                                            item?.image === null ? <div className="font-normal text-gray-500">No Image</div> :
+                                                <Image className="w-10 h-10 border border-black rounded" src={`/products/${item?.image[0]}`} alt="Jese image" width={100} height={100} />
+                                        }
+                                    </td>
+                                    <td className=" px-6 ">
+                                        <Image className="w-10 h-10 border border-black rounded" src={`/catagory/${item?.image}`} alt="Jese image" width={100} height={100} />
+                                    </td>
+
+                                    <td className="px-6 ">
+                                        <div className="font-normal text-gray-500">{moment(item?.createdAt).format("DD-MM-YYYY HH:mm:ss")}</div>
+                                    </td>
+                                    <td className="px-6 ">
+                                        <div className="font-normal text-gray-500">{moment(item?.updatedAt).format("DD-MM-YYYY HH:mm:ss")}</div>
+                                    </td>
+                                    <td className="px-6 ">
+                                        <input
+                                            className="btn btn-danger"
+                                            type="checkbox"
+                                            onChange={e => handleCheckboxChange(item?.id)}
                                         />
-                                </th>
-                                <th scope="row" className="flex items-center px-6  text-gray-900 whitespace-nowrap dark:text-white">
-                                    <div className="font-normal text-gray-500">{item?.id}</div>
-                                </th>
-                                <th scope="row" className="flex items-center px-6  text-gray-900 whitespace-nowrap dark:text-white">
-                                    <div className="font-normal text-gray-500">{item?.id}</div>
-                                </th>
-                                <th scope="row" className="flex items-center px-6  text-gray-900 whitespace-nowrap dark:text-white">
-                                    <div className="font-normal text-gray-500">{item?.id}</div>
-                                </th>
-                                <th scope="row" className="flex items-center px-6  text-gray-900 whitespace-nowrap dark:text-white">
-                                    <div className="font-normal text-gray-500">{item?.id}</div>
-                                </th>
-                                <th scope="row" className="flex items-center px-6  text-gray-900 whitespace-nowrap dark:text-white">
-                                    <div className="font-normal text-gray-500">{item?.id}</div>
-                                </th>
-                            </tr>
-                        ))
-                            :
-                            <tr className="justify-auto h-full">
-                                <td colSpan={6} className="text-center">
-                                    <div className="flex justify-center items-center">
-                                        <Image
-                                            width={100}
-                                            height={100}
-                                            src={dataNotFound}
-                                            alt="Data not found"
-                                        />
-                                    </div>
-                                </td>
-                            </tr>
-                    }
-                </tbody>
-
-
-            </div>
-
-
-
-
-            {/* <div className="table-section position mb-4">
-                <table className="table w-100 mb-0">
-                    <thead>
-                        <tr>
-                            <th scope="col">NO</th>
-                            <th scope="col">Name</th>
-                            <th scope="col">Id</th>
-                            <th scope="col">image</th>
-                            <th scope="col">video</th>
-                            <th scope="col">createdAt</th>
-                            <th scope="col">updatedAt</th>
-                            <th scope="col">Delete</th>
-                            <th scope="col">Update</th>
-                        </tr>
-                    </thead>
-                    {loader ? (
-                        <tr>
-                            <td colSpan={6}>
-                                <Loading />{" "}
-                            </td>
-                        </tr>
-                    ) :
-                        <tbody>
-                            {data.length > 0 ? (
-                                <>
-                                    {data.map((item, index) => (
-                                        <tr key={index}>
-                                            <td>{((currentPage - 1) * perPage) + (index + 1)}</td>
-
-                                            <td>{item?.name}</td>
-                                            <td>{item?.id}</td>
-                                            <td>
-                                                <Image
-                                                    className="small-img"
-                                                    width={100}
-                                                    height={100}
-                                                    src={`/products/${item?.image[0]}`}
-                                                    alt=""
-                                                />
-                                            </td>
-                                            <td>
-                                                <video width="10" height="10" controls>
-                                                    <source src={`products/video/${item?.video}`} />
-                                                    Your browser does not support the video tag.
-                                                </video>
-
-                                            </td>
-                                            <td>
-                                                {moment(item?.createdAt).format("DD-MM-YYYY")}
-                                            </td>
-                                            <td>
-                                                {" "}
-                                                {moment(item?.updatedAt).format("DD-MM-YYYY")}
-                                            </td>
-                                            <td>
-                                                <div>
-                                                    <input
-                                                        className="btn btn-danger"
-                                                        type="checkbox"
-                                                        onChange={e => handleCheckboxChange(item?.id)}
-                                                    />
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <button
-                                                    type="button"
-                                                    className="edit-btn"
-                                                    aria-label="i"
-                                                    onClick={(e) => {
-                                                        const { name, batchNo, uid, price, discountedPrice, discount, brand, countInStock, description, image, video, categoryId, subCategoryId } = item
-                                                        setAddProductData({
-                                                            // ...ProductsData,
-                                                            name,
-                                                            batchNo,
-                                                            uid,
-                                                            price,
-                                                            discountedPrice,
-                                                            discount,
-                                                            brand,
-                                                            countInStock,
-                                                            description,
-                                                            avgRating: 0,
-                                                            numReviews: 0,
-                                                            image,
-                                                            video,
-                                                            categoryId,
-                                                            subCategoryId,
-                                                            type: "update",
-                                                        });
-                                                        setModelToggle(true);
-                                                        setProductId(item?.id);
-                                                    }}
-                                                >
-                                                    <i className="fa fa-pencil" aria-hidden="true"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </>
-                            ) : (
-                                <tr>
-                                    <td colSpan={6}>
-                                        <div className="nodata position">
-                                            <Image width={100} height={100} src={dataNotFound} alt="" />
+                                    </td>
+                                    <td className="px-6 ">
+                                        <button
+                                            type="button"
+                                            className="edit-btn"
+                                            aria-label="i"
+                                            onClick={(e) => {
+                                                const { name, batchNo, uid, price, discountedPrice, discount, brand, qty, description, image, video, categoryId, subCategoryId, hsn, discountType } = item
+                                                setAddProductData({
+                                                    // ...ProductsData,
+                                                    name,
+                                                    batchNo,
+                                                    uid,
+                                                    price,
+                                                    discountedPrice: (discount * price) / 100,
+                                                    discount,
+                                                    brand,
+                                                    qty,
+                                                    description,
+                                                    avgRating: 0,
+                                                    numReviews: 0,
+                                                    image,
+                                                    video,
+                                                    hsn,
+                                                    discountType,
+                                                    categoryId,
+                                                    subCategoryId,
+                                                    type: "update",
+                                                });
+                                                setModelToggle(true);
+                                                setProductId(item?.id);
+                                                setUpdateImages(item?.image);
+                                            }}
+                                        >
+                                            Edit
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))
+                                :
+                                <tr className="justify-auto h-full">
+                                    <td colSpan={6} className="text-center">
+                                        <div className="flex justify-center items-center">
+                                            <Image
+                                                width={100}
+                                                height={100}
+                                                src={dataNotFound}
+                                                alt="Data not found"
+                                            />
                                         </div>
                                     </td>
                                 </tr>
-                            )
-                            }
-                        </tbody>
-                    }
+                        }
+                    </tbody>
                 </table>
-                <div className="row">
-                    <div className="col-lg-12 col-md-12 col-xl-12 col-sm-12">
-                        <div id="pagination" className="mt-3">
-                            <div className="pagination-list">
-                                <nav aria-label="Page navigation example">
-                                    <ReactPaginate
-                                        breakLabel="..."
-                                        breakClassName="page-item"
-                                        breakLinkClassName="page-link"
-                                        containerClassName="pagination justify-content-center"
-                                        pageClassName="page-item"
-                                        pageLinkClassName="page-link"
-                                        previousClassName="page-item"
-                                        previousLinkClassName="page-link"
-                                        nextClassName="page-item"
-                                        nextLinkClassName="page-link"
-                                        marginPagesDisplayed={2}
-                                        nextLabel={<>Next <i className="fa fa-angle-double-right" aria-hidden="true"></i></>}
-                                        onPageChange={(e) => setPage(e.selected + 1)}
-                                        pageRangeDisplayed={5}
-                                        pageCount={pageCount}
-                                        previousLabel={<><i className="fa fa-angle-double-left" aria-hidden="true"></i> Prev</>}
-                                        renderOnZeroPageCount={null}
-                                    />
 
-                                </nav>
-                            </div>
+                <div className="flex flex-col mt-3">
+                    <div id="pagination" className="mt-3">
+                        <div className="pagination-list">
+                            <nav aria-label="Page navigation example">
+                                <ReactPaginate
+                                    breakLabel="..."
+                                    breakClassName="inline-block px-3 py-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-200"
+                                    breakLinkClassName="inline-block px-3 py-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-200"
+                                    containerClassName="flex justify-center space-x-1"
+                                    pageClassName="inline-block px-3 py-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-200"
+                                    pageLinkClassName="inline-block px-3 py-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-200"
+                                    previousClassName="inline-block px-3 py-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-200"
+                                    previousLinkClassName="inline-block px-3 py-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-200"
+                                    nextClassName="inline-block px-3 py-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-200"
+                                    nextLinkClassName="inline-block px-3 py-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-200"
+                                    marginPagesDisplayed={2}
+                                    nextLabel={
+                                        <>
+                                            Next{" "}
+                                            <i className="fa fa-angle-double-right" aria-hidden="true"></i>
+                                        </>
+                                    }
+                                    onPageChange={(e) => setPage(e.selected + 1)}
+                                    pageRangeDisplayed={5}
+                                    pageCount={pageCount}
+                                    previousLabel={
+                                        <>
+                                            <i className="fa fa-angle-double-left" aria-hidden="true"></i>{" "}
+                                            Prev
+                                        </>
+                                    }
+                                    renderOnZeroPageCount={null}
+                                />
+
+                            </nav>
                         </div>
                     </div>
                 </div>
-            </div> */}
+            </div>
+            {
+                modelToggle &&
+                <div className="fixed z-10 inset-0 overflow-y-auto">
+                    <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                        <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+                            <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+                        </div>
+
+                        <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+                        <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+                            <div>
+                                <div className="mt-3 text-center sm:mt-5">
+                                    <h3 className="text-lg leading-6 font-medium text-gray-900">Product Details</h3>
+                                    <div className="mt-2">
+                                        <form method="post">
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                <div className="form-group mb-2">
+                                                    {addProductData.type === 'add' ? (
+                                                        <>
+
+                                                            <Select
+                                                                id="dropdown"
+                                                                placeholder={'Select category'}
+                                                                options={categoryOptions}
+                                                                onChange={(e) => {
+                                                                    setSubCategorySelect(e.value);
+                                                                }}
+                                                            />
+                                                        </>
+                                                    ) : (
+                                                        <p className="text-gray-700">{`Category Id : ${addProductData.categoryId}`}</p>
+                                                    )}
+                                                </div>
+                                                <div className="form-group mb-2">
+                                                    {addProductData.type === 'add' ? (
+                                                        <>
+
+                                                            <Select
+                                                                id="dropdown"
+                                                                placeholder={'Select subcategory'}
+                                                                options={subCatOptions}
+                                                                onChange={(e) => {
+                                                                    setAddProductData({
+                                                                        ...addProductData,
+                                                                        subCategoryId: e.value,
+                                                                    });
+                                                                }}
+                                                            />
+                                                        </>
+                                                    ) : (
+                                                        <p className="text-gray-700">{`Subcategory Id : ${addProductData.subCategoryId}`}</p>
+                                                    )}
+                                                </div>
+                                                <div className="form-group mb-2">
+
+                                                    <input
+                                                        value={addProductData?.name}
+                                                        type="text"
+                                                        className="form-control w-full px-3 py-2 border border-gray-300 rounded-md"
+                                                        id="inputName"
+                                                        placeholder="Product Name"
+                                                        name="name"
+                                                        onChange={(e) => {
+                                                            setAddProductData({
+                                                                ...addProductData,
+                                                                name: e.target.value,
+                                                            });
+                                                        }}
+                                                    />
+                                                </div>
+                                                <div className="form-group mb-2">
+
+                                                    <input
+                                                        value={addProductData?.batchNo}
+                                                        type="text"
+                                                        className="form-control w-full px-3 py-2 border border-gray-300 rounded-md"
+                                                        placeholder="Batch"
+                                                        name="batchNo"
+                                                        onChange={(e) => {
+                                                            setAddProductData({
+                                                                ...addProductData,
+                                                                batchNo: e.target.value,
+                                                            });
+                                                        }}
+                                                    />
+                                                </div>
+                                                <div className="form-group mb-2">
+                                                    <label htmlFor="inputUid" className="block text-left text-sm font-medium text-gray-700 mb-1">
+                                                        Uid
+                                                    </label>
+                                                    <input
+                                                        value={addProductData?.uid}
+                                                        type="text"
+                                                        className="form-control w-full px-3 py-2 border border-gray-300 rounded-md"
+                                                        id="inputUid"
+                                                        onChange={(e) => {
+                                                            setAddProductData({
+                                                                ...addProductData,
+                                                                uid: e.target.value,
+                                                            });
+                                                        }}
+                                                    />
+                                                </div>
+                                                <div className="form-group mb-2">
+                                                    <label htmlFor="inputPrice" className="block text-left text-sm font-medium text-gray-700 mb-1">
+                                                        Price
+                                                    </label>
+
+                                                    <NumericFormat
+                                                        value={addProductData?.price}
+                                                        thousandSeparator
+                                                        placeholder="0"
+                                                        allowLeadingZeros={false}
+                                                        decimalScale={2}
+                                                        allowNegative={false}
+                                                        onValueChange={(values) => {
+
+                                                            setAddProductData({
+                                                                ...addProductData,
+                                                                price: Number(parseInt(values.floatValue, 10).toString()),
+                                                            });
+                                                        }}
+                                                        className="form-control w-full px-3 py-2 border border-gray-300 rounded-md"
+                                                    />
+                                                </div>
+                                                <div className="form-group mb-2 ">
+                                                    <label htmlFor="inputPrice" className="block text-left text-sm font-medium text-gray-700 mb-1">
+                                                        Discounted Price
+                                                    </label>
+
+                                                    <input
+                                                        value={addProductData?.discountedPrice}
+                                                        type="number"
+                                                        min="0"
+                                                        className="form-control w-full px-3 py-2 border border-gray-300 rounded-md"
+                                                        id="inputPhone"
+                                                        onChange={(e) => {
+                                                            if (addProductData.price === 0) {
+                                                                errorToast("Add price first")
+                                                                return
+                                                            }
+                                                            if (Number(parseInt(e.target.value, 10).toString()) > addProductData.price * (100 / maxDiscount)) {
+                                                                errorToast(`discount price should be less then ${addProductData.price * (100 / maxDiscount)}`)
+                                                                return;
+                                                            }
+
+                                                            setAddProductData({
+                                                                ...addProductData,
+                                                                discountedPrice: Number(parseInt(e.target.value, 10).toString()),
+                                                                discount: Number(parseInt(e.target.value, 10).toString()) * 100 / addProductData.price
+                                                            });
+                                                        }}
+                                                    />
+                                                </div>
+                                                <div className="form-group mb-2">
+                                                    <label htmlFor="inputDiscount" className="block text-left text-sm font-medium text-gray-700 mb-1">
+                                                        Max Discount - {maxDiscount} %
+                                                    </label>
 
 
-            <div>
-                <div
-                    className={modelToggle ? "modal fade show " : "modal fade"}
-                    style={{ display: modelToggle ? "block" : "" }}
-                >
-                    <div className="modal-dialog modal-dialog-centered" role="document">
-                        <div className="modal-content">
-                            <div className="modal-header">
-                                <h5
-                                    className="modal-title font-sz-14-trans"
-                                    id="exampleModalLongTitle"
-                                >{addProductData.type === "add" ? "ADD PPRODUCT" : "UPDATE PRODUCT"}</h5>
-                                <button
-                                    type="button"
-                                    className="closec"
-                                    aria-label="span"
-                                    onClick={(e) => {
-                                        setAddProductData({
-                                            name: "",
-                                            batchNo: "",
-                                            uid: "",
-                                            price: 0,
-                                            discountedPrice: 0,
-                                            discount: 0,
-                                            brand: "",
-                                            countInStock: 0,
-                                            description: "",
-                                            avgRating: 0,
-                                            numReviews: 0,
-                                            image: null,
-                                            video: null,
-                                            categoryId: "",
-                                            subCategoryId: "",
-                                            type: "",
-                                        });
-                                        setModelToggle(false);
-                                        setDeleteId([]);
-                                        setUpdateImageIds([])
-                                        setProductId("")
-                                        setUpdateImages({})
-                                    }}
-                                >
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
-                            <div className="modal-body p-4">
-                                <form method="post">
-                                    <div className="row">
+                                                    <input
+                                                        value={Number(addProductData?.discount)}
+                                                        type="number"
+                                                        min="0"
+                                                        className="form-control w-full px-3 py-2 border border-gray-300 rounded-md"
+                                                        id="inputDiscount"
+                                                        style={{
+                                                            '-webkit-appearance': 'none',
+                                                            '-moz-appearance': 'textfield',
+                                                        }}
+                                                        onChange={(e) => {
+                                                            const parsedValue = e.target.value === '' ? '' : String(Number(e.target.value));
+                                                            const discount = parseInt(parsedValue, 10);
 
-                                        <div className="form-group mb-2 col-md-12 col-lg-6">
-                                            {
-                                                addProductData.type === "add" ?
-                                                    <>
-                                                        <label
-                                                            htmlFor="inputName"
-                                                            className="font-sz-12 font-family mb-2"
-                                                        >
-                                                            select Cateory
-                                                        </label>
-                                                        <Select
-                                                            id="dropdown"
-                                                            placeholder={"select category"}
-                                                            options={categoryOptions}
-                                                            onChange={(e) => {
-                                                                setSubCategorySelect(e.value)
-                                                            }}
-                                                        />
-                                                    </> : <p className="text-light">{`category Id : ${addProductData.categoryId}`}</p>
-                                            }
-                                        </div>
-                                        <div className="form-group mb-2 col-md-12 col-lg-6">
-                                            {
-                                                addProductData.type === "add" ?
-                                                    <>
-                                                        <label
-                                                            htmlFor="inputName"
-                                                            className="font-sz-12 font-family mb-2"
-                                                        >
-                                                            select SubCateory
-                                                        </label>
-                                                        <Select
-                                                            id="dropdown"
-                                                            placeholder={"select category"}
-                                                            options={subCatOptions}
+                                                            if (addProductData.price === 0) {
+                                                                errorToast("Add price first")
+                                                                return
+                                                            }
+
+                                                            if (discount > maxDiscount) {
+                                                                errorToast(`Discount should be less than ${maxDiscount}`);
+                                                                setAddProductData({
+                                                                    ...addProductData,
+                                                                    discount: addProductData.discount,
+                                                                    discountedPrice: addProductData.discountedPrice
+                                                                });
+                                                                return;
+                                                            }
+                                                            const disPrice = discount * addProductData.price / 100
+                                                            if (discount < 0 || isNaN(discount) || discount === undefined) {
+                                                                setAddProductData({
+                                                                    ...addProductData,
+                                                                    discount: 0,
+                                                                    discountedPrice: 0,
+                                                                });
+                                                            } else {
+                                                                setAddProductData({
+                                                                    ...addProductData,
+                                                                    discount: discount,
+                                                                    discountedPrice: disPrice,
+                                                                });
+                                                            }
+
+                                                        }}
+                                                    />
+                                                </div>
+                                                <div className="form-group mb-2">
+                                                    <label htmlFor="inputDescription" className="block text-left text-sm font-medium text-gray-700 mb-1">
+                                                        Description
+                                                    </label>
+                                                    <textarea
+                                                        value={addProductData?.description}
+                                                        rows="1"
+                                                        className="form-control w-full px-3 py-2 border border-gray-300 rounded-md"
+                                                        id="inputDescription"
+                                                        onChange={(e) => {
+                                                            setAddProductData({
+                                                                ...addProductData,
+                                                                description: e.target.value,
+                                                            });
+                                                        }}
+                                                    ></textarea>
+                                                </div>
+                                                <div className="form-group mb-2">
+                                                    <label htmlFor="inputBrand" className="block text-left text-sm font-medium text-gray-700 mb-1">
+                                                        Brand
+                                                    </label>
+                                                    <input
+                                                        value={addProductData?.brand}
+                                                        type="text"
+                                                        className="form-control w-full px-3 py-2 border border-gray-300 rounded-md"
+                                                        id="inputBrand"
+                                                        onChange={(e) => {
+                                                            setAddProductData({
+                                                                ...addProductData,
+                                                                brand: e.target.value,
+                                                            });
+                                                        }}
+                                                    />
+                                                </div>
+                                                <div className="form-group mb-2">
+                                                    <label htmlFor="inputqty" className="block text-left text-sm font-medium text-gray-700 mb-1">
+                                                        Qty  Stock
+                                                    </label>
+
+                                                    <NumericFormat
+                                                        value={addProductData?.qty}
+                                                        thousandSeparator
+                                                        placeholder="0"
+                                                        allowLeadingZeros={false}
+                                                        decimalScale={0}
+                                                        allowNegative={false}
+                                                        onValueChange={(values) => {
+
+                                                            setAddProductData({
+                                                                ...addProductData,
+                                                                qty: Number(values.floatValue),
+                                                            });
+                                                        }}
+                                                        className="form-control w-full px-3 py-2 border border-gray-300 rounded-md"
+                                                    />
+
+                                                </div>
+                                                <div className="form-group mb-2">
+                                                    <label htmlFor="inputqty" className="block text-left text-sm font-medium text-gray-700 mb-1">
+                                                        Hsn Code
+                                                    </label>
+                                                    <NumericFormat
+                                                        value={addProductData?.hsn}
+                                                        thousandSeparator
+                                                        placeholder="Hsn Code"
+                                                        allowLeadingZeros={false}
+                                                        decimalScale={0}
+                                                        allowNegative={false}
+                                                        onValueChange={(values) => {
+                                                            setAddProductData({
+                                                                ...addProductData,
+                                                                hsn: Number(values.floatValue),
+                                                            });
+                                                        }}
+                                                        className="form-control w-full px-3 py-2 border border-gray-300 rounded-md"
+                                                    />
+                                                </div>
+                                                <div className="form-group mb-2">
+                                                    <label htmlFor="inputDiscountType" className="block text-left text-sm font-medium text-gray-700 mb-1">
+                                                        Discount Type
+                                                    </label>
+                                                    <Select
+                                                        id="inputDiscountType"
+                                                        value={{ value: addProductData.discountType, label: addProductData.discountType }}
+                                                        options={[
+                                                            { value: 'FIXED', label: 'FIXED' },
+                                                            { value: 'PERCENTAGE', label: 'PERCENTAGE' },
+                                                        ]}
+                                                        defaultValue={{ value: 'FIXED', label: 'FIXED' }}
+                                                        onChange={(e) => {
+                                                            setAddProductData({
+                                                                ...addProductData,
+                                                                discountType: e.value,
+                                                            });
+                                                        }}
+                                                    />
+                                                </div>
+                                                <div className="form-group mb-2">
+                                                    <label htmlFor="inputImages" className="block text-left text-sm font-medium text-gray-700 mb-1">
+                                                        Images
+                                                    </label>
+                                                    {addProductData.type === 'update' ? (
+                                                        <>
+                                                            {updateImages?.map((x, i) => (
+                                                                <div className="relative" key={i}>
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        className="absolute top-0 left-0 w-6 h-6"
+                                                                        checked={updateImageIds.includes(x)}
+                                                                        onChange={() => handleImageClick(x)}
+                                                                    />
+                                                                    <img
+                                                                        key={i}
+                                                                        className="w-24 h-24"
+                                                                        src={`/products/${x}`}
+                                                                        alt=""
+                                                                        onClick={() => handleImageClick(x)}
+                                                                    />
+                                                                </div>
+                                                            ))}
+                                                            <input
+                                                                type="file"
+                                                                className="form-control w-full px-3 py-2 border border-gray-300 rounded-md"
+                                                                id="inputImages"
+                                                                multiple
+                                                                onChange={(e) => {
+                                                                    setUpdateImages({
+                                                                        ...updateImages,
+                                                                        image: e.target.files,
+                                                                    });
+                                                                }}
+                                                            />
+                                                        </>
+                                                    ) : (
+                                                        <input
+                                                            type="file"
+                                                            className="form-control w-full px-3 py-2 border border-gray-300 rounded-md"
+                                                            id="inputImages"
+                                                            multiple
                                                             onChange={(e) => {
                                                                 setAddProductData({
                                                                     ...addProductData,
-                                                                    subCategoryId: e.value,
-                                                                });
-                                                            }}
-                                                        />
-                                                    </> : <p className="text-light">{`Sub category Id : ${addProductData.subCategoryId}`}</p>
-                                            }
-                                        </div>
-
-                                        <div className="form-group mb-2 col-md-12 col-lg-6">
-                                            <label
-                                                htmlFor="inputName"
-                                                className="font-sz-12 font-family mb-2"
-                                            >
-                                                Product name
-                                            </label>
-                                            <input
-                                                value={addProductData?.name}
-                                                type="text"
-                                                className="form-control font-sz-14"
-                                                id="inputName"
-                                                placeholder="Name"
-                                                name="name"
-                                                onChange={(e) => {
-                                                    setAddProductData({
-                                                        ...addProductData,
-                                                        name: e.target.value,
-                                                    });
-                                                }}
-                                            />
-                                        </div>
-
-                                        <div className="form-group mb-2 col-md-12 col-lg-6">
-                                            <label
-                                                htmlFor="inputName"
-                                                className="font-sz-12 font-family mb-2"
-                                            >
-                                                BatchNo
-                                            </label>
-                                            <input
-                                                value={addProductData?.batchNo}
-                                                type="text"
-                                                className="form-control font-sz-14"
-                                                placeholder="Batch"
-                                                name="name"
-                                                onChange={(e) => {
-                                                    setAddProductData({
-                                                        ...addProductData,
-                                                        batchNo: e.target.value,
-                                                    });
-                                                }}
-                                            />
-                                        </div>
-
-                                        <div className="form-group mb-2 col-md-12 col-lg-6">
-                                            <label
-                                                htmlFor="inputPhone"
-                                                className="font-sz-12 font-family mb-2"
-                                            >
-                                                Uid
-                                            </label>
-                                            <input
-                                                value={addProductData?.uid}
-                                                type="text"
-                                                className="form-control font-sz-14"
-                                                id="inputPhone"
-                                                onChange={(e) => {
-                                                    setAddProductData({
-                                                        ...addProductData,
-                                                        uid: e.target.value,
-                                                    });
-                                                }}
-                                            />
-                                        </div>
-
-                                        <div className="form-group mb-2 col-md-12 col-lg-6">
-                                            <label
-                                                htmlFor="inputPhone"
-                                                className="font-sz-12 font-family mb-2"
-                                            >
-                                                Price
-                                            </label>
-                                            <input
-                                                value={addProductData?.price}
-                                                type="number"
-                                                min="0"
-                                                className="form-control font-sz-14"
-                                                id="inputPhone"
-                                                onChange={(e) => {
-                                                    parseInt(e.target.value, 10).toString()
-                                                    setAddProductData({
-                                                        ...addProductData,
-                                                        price: Number(parseInt(e.target.value, 10).toString()),
-                                                    });
-                                                }}
-                                            />
-                                        </div>
-
-                                        <div className="form-group mb-2 col-md-12 col-lg-6">
-                                            <label
-                                                htmlFor="inputPhone"
-                                                className="font-sz-12 font-family mb-2"
-                                            >
-                                                DiscountedPrice
-                                            </label>
-                                            <input
-                                                value={addProductData?.discountedPrice}
-                                                type="number"
-                                                min="0"
-                                                className="form-control font-sz-14"
-                                                id="inputPhone"
-                                                onChange={(e) => {
-                                                    if (addProductData.price === 0) {
-                                                        errorToast("Add price first")
-                                                        return
-                                                    }
-                                                    if (Number(parseInt(e.target.value, 10).toString()) >= addProductData.price * 0.3) {
-                                                        errorToast(`discount price should be less then ${addProductData.price * 0.3}`)
-                                                        return;
-                                                    }
-
-                                                    setAddProductData({
-                                                        ...addProductData,
-                                                        discountedPrice: Number(parseInt(e.target.value, 10).toString()),
-                                                        discount: Number(parseInt(e.target.value, 10).toString()) * 100 / addProductData.price
-                                                    });
-                                                }}
-                                            />
-                                        </div>
-
-                                        <div className="form-group mb-2 col-md-12 col-lg-6">
-                                            <label
-                                                htmlFor="inputPhone"
-                                                className="font-sz-12 font-family mb-2"
-                                            >
-                                                Discount  maximum = {maxDiscount}
-                                            </label>
-                                            <input
-                                                value={addProductData?.discount}
-                                                type="number"
-                                                min="0"
-                                                className="form-control font-sz-14"
-                                                id="inputPhone"
-                                                onChange={(e) => {
-
-
-                                                    if (Number(parseInt(e.target.value, 10).toString()) > maxDiscount) {
-                                                        errorToast(`Discount should be less than ${maxDiscount}`);
-                                                        return;
-                                                    }
-                                                    const disPrice = Number(parseInt(e.target.value, 10).toString()) * addProductData.price / 100
-
-                                                    setAddProductData({
-                                                        ...addProductData,
-                                                        discount: Number(parseInt(e.target.value, 10).toString()),
-                                                        discountedPrice: disPrice,
-                                                    });
-                                                }}
-                                            />
-                                        </div>
-
-                                        <div className="form-group mb-2 col-md-12 col-lg-6">
-                                            <label
-                                                htmlFor="inputPhone"
-                                                className="font-sz-12 font-family mb-2"
-                                            >
-                                                Description
-                                            </label>
-                                            <input
-                                                value={addProductData?.description}
-                                                type="text"
-                                                className="form-control font-sz-14"
-                                                id="inputPhone"
-                                                onChange={(e) => {
-                                                    setAddProductData({
-                                                        ...addProductData,
-                                                        description: e.target.value,
-                                                    });
-                                                }}
-                                            />
-                                        </div>
-
-                                        <div className="form-group mb-2 col-md-12 col-lg-6">
-                                            <label
-                                                htmlFor="inputPhone"
-                                                className="font-sz-12 font-family mb-2"
-                                            >
-                                                Brand
-                                            </label>
-                                            <input
-                                                type="text"
-                                                value={addProductData?.brand}
-
-                                                className="form-control font-sz-14"
-                                                id="inputPhone"
-                                                onChange={(e) => {
-                                                    setAddProductData({
-                                                        ...addProductData,
-                                                        brand: e.target.value,
-                                                    });
-                                                }}
-                                            />
-                                        </div>
-
-                                        <div className="form-group mb-2 col-md-12 col-lg-6">
-                                            <label
-                                                htmlFor="inputPhone"
-                                                className="font-sz-12 font-family mb-2"
-                                            >
-                                                count In Stock
-                                            </label>
-                                            <input
-                                                type="number"
-                                                value={addProductData?.countInStock}
-                                                min={0}
-
-                                                className="form-control font-sz-14"
-                                                id="inputPhone"
-                                                onChange={(e) => {
-                                                    setAddProductData({
-                                                        ...addProductData,
-                                                        countInStock: e.target.value,
-                                                    });
-                                                }}
-                                            />
-                                        </div>
-
-                                        <div className="form-group mb-2 col-md-12 col-lg-6">
-                                            <label
-                                                htmlFor="inputPhone"
-                                                className="font-sz-12 font-family mb-2"
-                                            >
-                                                images
-                                            </label>
-                                            {
-                                                addProductData.type === "update" ?
-                                                    <>
-                                                        {addProductData?.image.map((x, i) => (
-                                                            <div key={i} className="image-container">
-                                                                <input
-                                                                    type="checkbox"
-                                                                    checked={updateImageIds.includes(x)}
-                                                                    onChange={() => handleImageClick(x)}
-                                                                />
-                                                                <Image
-                                                                    key={i}
-                                                                    className="small-img"
-                                                                    width={100}
-                                                                    height={100}
-                                                                    src={`/products/${x}`}
-                                                                    alt=""
-                                                                    onClick={e => {
-                                                                        handleImageClick(x)
-                                                                    }}
-                                                                />
-                                                            </div>
-                                                        ))}
-
-                                                        <input
-                                                            type="file"
-                                                            className="form-control font-sz-14"
-                                                            id="inputPhone"
-                                                            multiple
-                                                            name="file"
-                                                            onChange={(e) => {
-                                                                setUpdateImages({
-                                                                    ...updateImages,
                                                                     image: e.target.files,
                                                                 });
                                                             }}
                                                         />
-                                                    </>
-                                                    :
+                                                    )}
+                                                </div>
+                                                <div className="form-group mb-2">
+                                                    <label htmlFor="inputVideo" className="block text-left text-sm font-medium text-gray-700 mb-1">
+                                                        Video
+                                                    </label>
+
                                                     <input
                                                         type="file"
-                                                        className="form-control font-sz-14"
-                                                        id="inputPhone"
-                                                        multiple
-                                                        name="file"
+                                                        className="form-control w-full px-3 py-2 border border-gray-300 rounded-md"
+                                                        id="inputVideo"
                                                         onChange={(e) => {
                                                             setAddProductData({
                                                                 ...addProductData,
-                                                                image: e.target.files,
+                                                                video: e.target.files[0],
                                                             });
                                                         }}
                                                     />
-                                            }
-                                        </div>
+                                                </div>
+                                            </div>
+                                            <div className="mt-5 sm:mt-6">
+                                                <button
+                                                    type="button"
+                                                    className="inline-flex justify-center w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-300 text-base font-medium text-white hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 sm:text-sm"
+                                                    onClick={(e) => addOrUpdateProduct(e)}
+                                                >
+                                                    {isLoading ? 'Loading...' : addProductData.type === "add" ? "Add" : "Update"}
+                                                </button>
+                                            </div>
+                                            <div className="mt-2 sm:mt-3">
+                                                <button
+                                                    type="button"
+                                                    className="inline-flex justify-center w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-300 text-base font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 sm:text-sm"
+                                                    onClick={() => {
 
-                                        <div className="form-group mb-2 col-md-12 col-lg-6">
-                                            <label
-                                                htmlFor="inputPhone"
-                                                className="font-sz-12 font-family mb-2"
-                                            >
-                                                Video
-                                            </label>
-                                            <input
-                                                type="file"
-                                                className="form-control font-sz-14"
-                                                id="inputPhone"
-                                                name="file"
-                                                onChange={(e) => {
-                                                    setAddProductData({
-                                                        ...addProductData,
-                                                        video: e.target.files[0],
-                                                    });
-                                                }}
-                                            />
-                                        </div>
+                                                        setAddProductData({
+                                                            name: "",
+                                                            batchNo: "",
+                                                            uid: "",
+                                                            price: 0,
+                                                            discountedPrice: 0,
+                                                            discount: 0,
+                                                            brand: "",
+                                                            qty: 0,
+                                                            description: "",
+                                                            avgRating: 0,
+                                                            numReviews: 0,
+                                                            image: null,
+                                                            video: null,
+                                                            categoryId: "",
+                                                            subCategoryId: "",
+                                                            discountType: "",
+                                                            han: 0,
+                                                            type: "",
+                                                        });
+                                                        setModelToggle(false);
+                                                        setDeleteId([]);
+                                                        setUpdateImageIds([])
+                                                        setProductId("")
+                                                        setUpdateImages({})
 
-                                        <div className="form-group txt-center mt-3 col-md-12 col-lg-12">
-                                            <button
-                                                type="submit"
-                                                className="yellow-btn font-sz-14 float-lg-end float-sm-start"
-                                                // disabled={isLoading}
-                                                onClick={(e) => {
-                                                    addOrUpdateProduct(e)
-                                                }
-                                                }
-                                            >
-                                                {isLoading ? 'Loading..' : addProductData.type === "add" ? "Add" : 'Update'}
-                                            </button>
-                                        </div>
+                                                    }}
 
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div
-                    className={deleteToggle ? "modal fade show " : "modal fade"}
-                    style={{ display: deleteToggle ? "block" : "" }}
-                >
-                    <div className="modal-dialog modal-dialog-centered" role="document">
-                        <div className="modal-content">
-                            <div className="modal-header">
-                                <h5
-                                    className="modal-title font-sz-14-trans"
-                                    id="exampleModalLongTitle"
-                                ></h5>
-                                <button
-                                    type="button"
-                                    className="closec"
-                                    aria-label="span"
-                                    onClick={(e) => {
-                                        setDeleteToggle(false);
-                                        setAddProductData({});
-
-                                    }}
-                                >
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
-                            <div className="modal-body p-4">
-
-                                <div className="row">
-                                    <div className="form-group mb-2 col-md-12 col-lg-6">
-                                        <label
-                                            htmlFor="inputName"
-                                            className="font-sz-12 font-family mb-2"
-                                        >
-                                            Are you sure you want to delete this category?
-                                        </label>
-                                    </div>
-
-                                    <div className="form-group txt-center mt-3 col-md-12 col-lg-12">
-                                        <button
-                                            type="button"
-                                            className="yellow-btn font-sz-14 float-lg-end float-sm-start"
-                                            // disabled={isLoading}
-                                            onClick={(e) => {
-                                                deleteSubCategory(e)
-                                            }
-                                            }
-                                        >
-                                            {isLoading ? 'Loading...' : "Delete"}
-                                        </button>
+                                                >
+                                                    Cancel
+                                                </button>
+                                            </div>
+                                        </form>
                                     </div>
                                 </div>
-
                             </div>
                         </div>
                     </div>
                 </div>
-            </div >
+            }
+            <div
+                className={`${deleteToggle ? "block" : "hidden"} fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50`}
+            >
+                <div className="bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:max-w-lg sm:w-full">
+                    <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <div className="sm:flex sm:items-start">
+                            <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                                <h3 className="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                                </h3>
+                                <div className="mt-2">
+                                    <p className="text-sm text-gray-500">Are you sure you want to delete this category?</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button
+                            type="button"
+                            className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-yellow-500 text-base font-medium text-white hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 sm:ml-3 sm:w-auto sm:text-sm"
+                            onClick={(e) => {
+                                deleteProducts(e);
+                            }}
+                        >
+                            {isLoading ? 'Loading...' : 'Delete'}
+                        </button>
+                        <button
+                            type="button"
+                            className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                            onClick={() => {
+                                setDeleteToggle(false);
+                                setAddProductData({});
+                            }}
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div >
+
     );
 }

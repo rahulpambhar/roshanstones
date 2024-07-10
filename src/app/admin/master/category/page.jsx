@@ -145,7 +145,7 @@ export default function DashBoardPage() {
           <option value={10}>10 per page</option>
           <option value={20}>20 per page</option>
         </select>
-      
+
         <div className="flex gap-5  ">
           {" "}
           <button
@@ -366,8 +366,6 @@ export default function DashBoardPage() {
         </div>
 
       </div>
-
-
 
       <div className=" mb-4">
         <div className={`fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 transition-opacity duration-700 ${modelToggle ? 'visible opacity-100' : 'invisible opacity-0'}`}>

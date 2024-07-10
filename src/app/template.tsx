@@ -8,9 +8,11 @@ import LoginModal from "../components/Login/index";
 import path from "path";
 import { ThemeProvider } from "next-themes";
 import Loading from "./loading";
+import toast, { Toaster } from 'react-hot-toast';
 
 import Footer from "@/components/frontside/Footer/page";
 import Navbar from "@/components/frontside/Navbar/page";
+import Example from "@/components/Cart";
 
 export default function Template({ children }: any) {
   const pathname = usePathname();
@@ -31,7 +33,9 @@ export default function Template({ children }: any) {
     <div id="root">
       <div>
         <Navbar />
+        <Toaster position="top-right" reverseOrder={false} />
         {children}
+        {/* <Example/> */}
         <Footer />
       </div>
       {isLoginModelOpen && <LoginModal />}

@@ -12,6 +12,7 @@ const authOptions: NextAuthOptions = {
         strategy: "jwt",
         maxAge: 86400, // 1 days
     },
+  
     providers: [
         CredentialsProvider({
             name: "Sign in",
@@ -55,7 +56,7 @@ const authOptions: NextAuthOptions = {
             return { ...session, user: token };
         },
         async jwt({ token, user }: any): Promise<any> {
-            const userInfo = await prisma.user.findFirst({
+            const userInfo = await prisma?.user?.findFirst({
                 where: {
                     email: token.email
                 }

@@ -33,7 +33,7 @@ export async function POST(request) {
     const type = formData.get("type");
     const image = formData.get("image");
 
-    const isCategory = await prisma.category.findFirst({
+    const isCategory = await prisma?.category.findFirst({
       where: {
         name,
       },
@@ -60,7 +60,7 @@ export async function POST(request) {
           data.image = imageName;
         }
 
-        const category = await prisma.category.create({
+        const category = await prisma?.category.create({
           data: {
             name,
             image: data?.image,
@@ -88,7 +88,7 @@ export async function POST(request) {
           await writeFile(path, buffer);
           data.image = imageName;
 
-          const catagory = await prisma.category.findFirst({
+          const catagory = await prisma?.category.findFirst({
             where: {
               id: categoryId,
             },
@@ -98,7 +98,7 @@ export async function POST(request) {
           await unlink(path2);
         }
 
-        const category = await prisma.category.update({
+        const category = await prisma?.category.update({
           where: {
             id: categoryId,
           },
@@ -145,7 +145,7 @@ export async function GET(request) {
     let offset = page * limit;
 
     if (id) {
-      const category = await prisma.category.findFirst({
+      const category = await prisma?.category.findFirst({
         where: {
           id,
         },
@@ -169,13 +169,13 @@ export async function GET(request) {
       let count;
       let list;
 
-      count = await prisma.category.count({
+      count = await prisma?.category?.count({
         where: {
           isBlocked: false,
         },
       });
 
-      list = await prisma.category.findMany({
+      list = await prisma?.category?.findMany({
         where: {
           isBlocked: false,
         },
@@ -250,14 +250,14 @@ export async function DELETE(request) {
     let deletedCategory;
 
     for (let categoryId of categoryIds) {
-      const category = await prisma.category.findFirst({
+      const category = await prisma?.category.findFirst({
         where: {
           id: categoryId,
         },
       });
 
       if (category) {
-        deletedCategory = await prisma.category.update({
+        deletedCategory = await prisma?.category.update({
           where: {
             id: categoryId,
           },

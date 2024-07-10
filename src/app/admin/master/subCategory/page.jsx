@@ -181,14 +181,23 @@ export default function BuyHistory() {
   }, [selectFilter]);
 
   return (
-    <div className="row">
-      <div className="col-lg-12 col-md-12 col-xl-12 col-xxl-12">
-        {/* <Breadcrumb /> */}
-        <div className="filter-section position">
+    <div className="container">
+      {/* <Breadcrumb /> */}
+      <div className="filter-section position flex justify-between items-center py-5 ">
+        <select
+          value={perPage}
+          onChange={(e) => setPerPage(Number(e.target.value))}
+          className="  block w-32 px-2 py-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+        >
+          <option value={5}>5 per page</option>
+          <option value={10}>10 per page</option>
+          <option value={20}>20 per page</option>
+        </select>
+        <div className="flex gap-5 ">
           <div className="filter-title font-sz-14 font-family">
             SUB Category
           </div>
-          <button type="button" className="filter-btn">
+          <button type="button" className="filter-btn flex gap-1">
             Add
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -210,7 +219,7 @@ export default function BuyHistory() {
               />
             </svg>
           </button>
-          <button type="button" className="filter-btn">
+          <button type="button" className="filter-btn flex gap-1 ">
             Delete Multiple
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -235,7 +244,7 @@ export default function BuyHistory() {
               />
             </svg>
           </button>
-          <div className="filter-btn">
+          <div className="filter-btn flex gap-1 h-3">
             <Select
               className="left-margin-10"
               id="dropdown"
@@ -247,162 +256,172 @@ export default function BuyHistory() {
             />
           </div>
         </div>
-        <div className="table-section position mb-4">
-          <table className="table w-100 mb-0">
-            <thead>
+      </div>
+
+      <div className=" mt-4 relative overflow-x-auto shadow-md sm:rounded-lg ">
+        <div className="flex items-center justify-between flex-wrap md:flex-row space-y-4 md:space-y-0 pb-4 bg-gray-200 dark:bg-gray-900">
+          <label htmlFor="table-search" className="sr-only">Search</label>
+          <div className="relative ml-auto">
+            <div className="absolute inset-y-0 rtl:inset-r-0 start-0 flex items-center ps-3 pointer-events-none">
+              <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+              </svg>
+            </div>
+            <input
+              type="text"
+              id="table-search-users"
+              className="block p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              placeholder="Search for category"
+            />
+          </div>
+        </div>
+
+        <table className="w-full text-sm text-left rtl:text-right  text-gray-500 dark:text-gray-400">
+          <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+            <tr>
+              <th scope="col" className="px-6 py-3">Id</th>
+              <th scope="col" className="px-6 py-3">Name</th>
+              <th scope="col" className="px-6 py-3">image</th>
+              <th scope="col" className="px-6 py-3">createdAt</th>
+              <th scope="col" className="px-6 py-3">updatedAt</th>
+              <th scope="col" className="px-6 py-3">Delete</th>
+              <th scope="col" className="px-6 py-3">Update</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {loader ? (
               <tr>
-                <th scope="col">NO</th>
-                <th scope="col">Name</th>
-                <th scope="col">Id</th>
-                <th scope="col">image</th>
-                <th scope="col">createdAt</th>
-                <th scope="col">updatedAt</th>
-                <th scope="col">Delete</th>
-                <th scope="col">Update</th>
+                <td colSpan={6}>
+                  <Loading />{" "}
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {loader ? (
-                <tr>
-                  <td colSpan={6}>
-                    <Loading />{" "}
-                  </td>
-                </tr>
-              ) : data.length > 0 ? (
-                <>
-                  {data.map((item, index) => (
-                    <tr key={index}>
-                      <td>{(currentPage - 1) * perPage + (index + 1)}</td>
-                      <td>{item?.name}</td>
-                      <td>{item?.id}</td>
-                      <td>
-                        <Image
-                          className="small-img"
-                          width={100}
-                          height={100}
-                          src={`/subCategory/${item?.image}`}
-                          alt=""
-                        />
-                      </td>
-                      <td>{moment(item?.createdAt).format("DD-MM-YYYY")}</td>
-                      <td> {moment(item?.updatedAt).format("DD-MM-YYYY")}</td>
-                      <td>
-                        <div>
-                          <input
-                            className="btn btn-danger"
-                            type="checkbox"
-                            onChange={(e) => handleCheckboxChange(item?.id)}
-                          />
-                        </div>
-                      </td>
-                      <td>
-                        <button
-                          type="button"
-                          className="edit-btn"
-                          aria-label="i"
-                          onClick={(e) => {
-                            setSubcategoryId(item?.id);
-                            serAddOrUpdate("update");
-                            setInput({
-                              ...input,
-                              name: item?.name,
-                            });
-                            setModelToggle(true);
-                          }}
-                        >
-                          <i className="fa fa-pencil" aria-hidden="true"></i>
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </>
-              ) : (
-                <tr>
-                  <td colSpan={6}>
-                    <div className="nodata position">
+            ) : data.length > 0 ? (
+              <>
+                {data.map((item, index) => (
+                  <tr key={item.id} className="bg-gray-200  h-[20px] border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600">
+                    <th scope="row" className="flex items-center px-6  text-gray-900 whitespace-nowrap dark:text-white">
+                      <h6 className="font-normal text-gray-500">{`${item?.id?.slice(0, 3)}...${item?.id.slice(-4)}`}</h6>
+                    </th>
+
+                    <td className="px-6 py-3">{item?.name}</td>
+                    <td className="px-6 ">
                       <Image
+                        className="small-img"
                         width={100}
                         height={100}
-                        src={dataNotFound}
+                        src={`/subCategory/${item?.image}`}
                         alt=""
                       />
-                    </div>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-          <div className="row">
-            <div className="col-lg-12 col-md-12 col-xl-12 col-sm-12">
-              <div id="pagination" className="mt-3">
-                <div className="pagination-list">
-                  <nav aria-label="Page navigation example">
-                    <ReactPaginate
-                      breakLabel="..."
-                      breakClassName="page-item"
-                      breakLinkClassName="page-link"
-                      containerClassName="pagination justify-content-center"
-                      pageClassName="page-item"
-                      pageLinkClassName="page-link"
-                      previousClassName="page-item"
-                      previousLinkClassName="page-link"
-                      nextClassName="page-item"
-                      nextLinkClassName="page-link"
-                      marginPagesDisplayed={2}
-                      nextLabel={
-                        <>
-                          Next{" "}
-                          <i
-                            className="fa fa-angle-double-right"
-                            aria-hidden="true"
-                          ></i>
-                        </>
-                      }
-                      onPageChange={(e) => setPage(e.selected + 1)}
-                      pageRangeDisplayed={5}
-                      pageCount={pageCount}
-                      previousLabel={
-                        <>
-                          <i
-                            className="fa fa-angle-double-left"
-                            aria-hidden="true"
-                          ></i>{" "}
-                          Prev
-                        </>
-                      }
-                      renderOnZeroPageCount={null}
+                    </td>
+                    <td className=" px-6 ">{moment(item?.createdAt).format("DD-MM-YYYY")}</td>
+                    <td className=" px-6 "> {moment(item?.updatedAt).format("DD-MM-YYYY")}</td>
+                    <td className=" px-6 ">
+                      <div>
+                        <input
+                          className="btn btn-danger"
+                          type="checkbox"
+                          onChange={(e) => handleCheckboxChange(item?.id)}
+                        />
+                      </div>
+                    </td>
+                    <td className=" px-6 ">
+                      <button
+                        type="button"
+                        className="edit-btn"
+                        aria-label="i"
+                        onClick={(e) => {
+                          setSubcategoryId(item?.id);
+                          serAddOrUpdate("update");
+                          setInput({
+                            ...input,
+                            name: item?.name,
+                          });
+                          setModelToggle(true);
+                        }}
+                      >
+                        Edit
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </>
+            ) : (
+              <tr>
+                <td colSpan={6}>
+                  <div className="nodata position">
+                    <Image
+                      width={100}
+                      height={100}
+                      src={dataNotFound}
+                      alt=""
                     />
-                    <select
-                      value={perPage}
-                      onChange={(e) => setPerPage(Number(e.target.value))}
-                    >
-                      <option value={5}>5 per page</option>
-                      <option value={10}>10 per page</option>
-                      <option value={20}>20 per page</option>
-                    </select>
-                  </nav>
-                </div>
-              </div>
+                  </div>
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+
+
+        <div className="flex flex-col mt-3">
+          <div id="pagination" className="mt-3">
+            <div className="pagination-list">
+              <nav aria-label="Page navigation example">
+                <ReactPaginate
+                  breakLabel="..."
+                  breakClassName="inline-block px-3 py-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-200"
+                  breakLinkClassName="inline-block px-3 py-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-200"
+                  containerClassName="flex justify-center space-x-1"
+                  pageClassName="inline-block px-3 py-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-200"
+                  pageLinkClassName="inline-block px-3 py-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-200"
+                  previousClassName="inline-block px-3 py-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-200"
+                  previousLinkClassName="inline-block px-3 py-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-200"
+                  nextClassName="inline-block px-3 py-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-200"
+                  nextLinkClassName="inline-block px-3 py-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-200"
+                  marginPagesDisplayed={2}
+                  nextLabel={
+                    <>
+                      Next{" "}
+                      <i
+                        className="fa fa-angle-double-right"
+                        aria-hidden="true"
+                      ></i>
+                    </>
+                  }
+                  onPageChange={(e) => setPage(e.selected + 1)}
+                  pageRangeDisplayed={5}
+                  pageCount={pageCount}
+                  previousLabel={
+                    <>
+                      <i
+                        className="fa fa-angle-double-left"
+                        aria-hidden="true"
+                      ></i>{" "}
+                      Prev
+                    </>
+                  }
+                  renderOnZeroPageCount={null}
+                />
+              </nav>
+
             </div>
           </div>
         </div>
       </div>
-      <div>
-        <div
-          className={modelToggle ? "modal fade show " : "modal fade"}
-          style={{ display: modelToggle ? "block" : "" }}
-        >
-          <div className="modal-dialog modal-dialog-centered" role="document">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5
-                  className="modal-title font-sz-14-trans"
-                  id="exampleModalLongTitle"
-                ></h5>
+
+      <div
+        className={`fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 ${modelToggle ? "block" : "hidden"}`}
+      >
+        <div className="bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:max-w-lg sm:w-full">
+          <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+            <div className="sm:flex sm:items-start">
+              <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                <h3 className="text-lg leading-6 font-medium text-gray-900" id="exampleModalLongTitle"></h3>
                 <button
                   type="button"
-                  className="closec"
-                  aria-label="span"
+                  className="absolute top-0 right-0 mt-4 mr-4 text-gray-500 hover:text-gray-700"
+                  aria-label="Close"
                   onClick={(e) => {
                     setInput({});
                     setImage(null);
@@ -415,134 +434,117 @@ export default function BuyHistory() {
                   <span aria-hidden="true">&times;</span>
                 </button>
               </div>
-              <div className="modal-body p-4">
-                <form method="post">
-                  <div className="row">
-                    <div className="form-group mb-2 col-md-12 col-lg-6">
-                      <label
-                        htmlFor="inputName"
-                        className="font-sz-12 font-family mb-2"
-                      >
-                        select Cateory
-                      </label>
-                      <Select
-                        id="dropdown"
-                        placeholder={"select category"}
-                        options={categoryOptions}
-                        onChange={(e) => {
-                          setCategoryId(e.value);
-                        }}
-                      />
-                    </div>
-
-                    <div className="form-group mb-2 col-md-12 col-lg-6">
-                      <label
-                        htmlFor="inputName"
-                        className="font-sz-12 font-family mb-2"
-                      >
-                        category name
-                      </label>
-                      <input
-                        value={input?.name ? input?.name : ""}
-                        type="text"
-                        className="form-control font-sz-14"
-                        id="inputName"
-                        placeholder="Name"
-                        name="name"
-                        onChange={(e) => {
-                          setInput({
-                            ...input,
-                            [e.target.name]: e.target.value,
-                          });
-                        }}
-                      />
-                    </div>
-                    <div className="form-group mb-2 col-md-12 col-lg-6">
-                      <label
-                        htmlFor="inputPhone"
-                        className="font-sz-12 font-family mb-2"
-                      >
-                        image
-                      </label>
-                      <input
-                        type="file"
-                        className="form-control font-sz-14"
-                        id="inputPhone"
-                        name="file"
-                        onChange={(e) => {
-                          setImage(e.target.files[0]);
-                        }}
-                      />
-                    </div>
-
-                    <div className="form-group txt-center mt-3 col-md-12 col-lg-12">
-                      <button
-                        type="submit"
-                        className="yellow-btn font-sz-14 float-lg-end float-sm-start"
-                        disabled={isLoading}
-                        onClick={(e) => {
-                          addOrUpdateSubCatagoery(e);
-                        }}
-                      >
-                        {isLoading
-                          ? "Loading.."
-                          : addOrUpdate === "add"
-                            ? "Add"
-                            : "Update"}
-                      </button>
-                    </div>
+            </div>
+            <div className="mt-2">
+              <form method="post">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="form-group mb-2">
+                    <label htmlFor="inputName" className="block text-sm font-medium text-gray-700">
+                      Select Category
+                    </label>
+                    <Select
+                      id="dropdown"
+                      placeholder={"Select category"}
+                      options={categoryOptions}
+                      onChange={(e) => {
+                        setCategoryId(e.value);
+                      }}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                    />
                   </div>
-                </form>
-              </div>
+
+                  <div className="form-group mb-2">
+                    <label htmlFor="inputName" className="block text-sm font-medium text-gray-700">
+                      SubCategory Name
+                    </label>
+                    <input
+                      value={input?.name ? input?.name : ""}
+                      type="text"
+                      className="form-control w-full px-3 py-2 border border-gray-300 rounded-md"
+                      id="inputName"
+                      placeholder="Name"
+                      name="name"
+                      onChange={(e) => {
+                        setInput({
+                          ...input,
+                          [e.target.name]: e.target.value,
+                        });
+                      }}
+                    />
+                  </div>
+
+                  <div className="form-group mb-2">
+                    <label htmlFor="inputPhone" className="block text-sm font-medium text-gray-700">
+                      Image
+                    </label>
+                    <input
+                      type="file"
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                      id="inputPhone"
+                      name="file"
+                      onChange={(e) => {
+                        setImage(e.target.files[0]);
+                      }}
+                    />
+                  </div>
+
+                  <div className="col-span-1 md:col-span-2 text-center mt-3">
+                    <button
+                      type="submit"
+                      className="inline-flex justify-center w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-300 text-base font-medium text-white hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 sm:text-sm"
+                      disabled={isLoading}
+                      onClick={(e) => {
+                        addOrUpdateSubCatagoery(e);
+                      }}
+                    >
+                      {isLoading
+                        ? "Loading.." : addOrUpdate === "add" ? "Add" : "Update"}
+                    </button>
+                  </div>
+                </div>
+              </form>
             </div>
           </div>
         </div>
+      </div>
 
-        <div
-          className={deleteToggle ? "modal fade show " : "modal fade"}
-          style={{ display: deleteToggle ? "block" : "" }}
-        >
-          <div className="modal-dialog modal-dialog-centered" role="document">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5
-                  className="modal-title font-sz-14-trans"
-                  id="exampleModalLongTitle"
-                ></h5>
+      <div className={`fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 ${deleteToggle ? "block" : "hidden"}`}>
+        <div className="bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:max-w-lg sm:w-full">
+          <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+            <div className="sm:flex sm:items-start">
+              <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                <h5 className="text-lg leading-6 font-medium text-gray-900" id="exampleModalLongTitle"></h5>
                 <button
                   type="button"
-                  className="closec"
-                  aria-label="span"
+                  className="absolute top-0 right-0 mt-4 mr-4 text-gray-500 hover:text-gray-700"
+                  aria-label="Close"
                   onClick={(e) => {
                     setDeleteToggle(false);
+                    setDeleteId([]);
                   }}
                 >
                   <span aria-hidden="true">&times;</span>
                 </button>
               </div>
-              <div className="modal-body p-4">
-                <div className="row">
-                  <div className="form-group mb-2 col-md-12 col-lg-6">
-                    <label
-                      htmlFor="inputName"
-                      className="font-sz-12 font-family mb-2"
-                    >
-                      Are you sure you want to delete this category?
-                    </label>
-                  </div>
-
-                  <div className="form-group txt-center mt-3 col-md-12 col-lg-12">
-                    <button
-                      type="button"
-                      className="yellow-btn font-sz-14 float-lg-end float-sm-start"
-                      disabled={isLoading}
-                      onClick={(e) => {
-                        deleteSubCategory(e);
-                      }}
-                    >
-                      {isLoading ? "Loading..." : "Delete"}
-                    </button>
-                  </div>
+            </div>
+            <div className="mt-2">
+              <div className="grid grid-cols-1 gap-4">
+                <div className="form-group mb-2">
+                  <label htmlFor="inputName" className="block text-sm font-medium text-gray-700">
+                    Are you sure you want to delete this category?
+                  </label>
+                </div>
+                <div className="form-group text-center mt-3">
+                  <button
+                    type="button"
+                    className="inline-flex justify-center w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-300 text-base font-medium text-white hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 sm:text-sm"
+                    disabled={isLoading}
+                    onClick={(e) => {
+                      deleteSubCategory(e);
+                    }}
+                  >
+                    {isLoading ? "Loading..." : "Delete"}
+                  </button>
                 </div>
               </div>
             </div>
