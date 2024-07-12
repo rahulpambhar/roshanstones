@@ -24,6 +24,7 @@ async function getProductReviewsWithAvg(id: string) {
                         id: true,
                         name: true,
                         email: true,
+                        country: true,
                         profile_pic: true,
                     }
                 }
@@ -40,6 +41,7 @@ async function getProductReviewsWithAvg(id: string) {
     ]);
 
     const averageRating = avgRating._avg.rating;
+    console.log('averageRating::: ', averageRating);
 
     return { reviews, averageRating };
 }
@@ -57,7 +59,7 @@ export async function POST(request: Request) {
             });
         }
         const body = await request.json();
-        const { reviewTitle, review, ratings, id } = body.payload
+        const { review, ratings, id } = body.payload
 
         const isReview = await prisma.review.findFirst({
             where: {
@@ -71,7 +73,6 @@ export async function POST(request: Request) {
                 data: {
                     rating: +ratings,
                     review,
-                    reviewTitle,
                     userId: session?.user?.id,
                     productId: id,
                     createdBy: session?.user?.id,
@@ -84,7 +85,6 @@ export async function POST(request: Request) {
                     id: isReview.id
                 },
                 data: {
-                    reviewTitle,
                     review,
                     rating: +ratings,
                     updatedBy: session?.user?.id,
@@ -92,14 +92,14 @@ export async function POST(request: Request) {
             })
         }
         const { reviews, averageRating } = await getProductReviewsWithAvg(id);
-        const data = { reviews, averageRating }; 
-       
+        const data = { reviews, averageRating };
+
 
         return NextResponse.json({
             st: true,
             statusCode: StatusCodes.OK,
             data: data,
-            msg: "Thank you for your valuable feedback.",
+            msg: "Review appreciated.",
         });
 
     } catch (error) {
@@ -128,10 +128,10 @@ export async function GET(request: Request) {
 
         const { query }: any = parse(request.url, true);
         let { id, }: any = query;
-        
+
 
         const { reviews, averageRating } = await getProductReviewsWithAvg(id);
-        const data = { reviews, averageRating };   
+        const data = { reviews, averageRating };
 
         return NextResponse.json({
             st: true, statusCode: StatusCodes.OK, data, msg: "review list fetch.",

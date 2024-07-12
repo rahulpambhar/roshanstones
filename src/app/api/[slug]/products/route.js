@@ -44,7 +44,6 @@ export async function POST(request) {
     const type = formData.get("type");
     const discountType = formData.get("discountType");
     const hsn = formData.get("hsn");
-    console.log('hsn::: ', hsn);
     const productImages = formData.getAll("image");
     const video = formData.get("video");
     const imageIndex = formData.get("imageIndex");

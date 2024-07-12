@@ -49,11 +49,15 @@ export default function Example() {
 
     useEffect(() => {
         setSubTotal(
-            cartItem.reduce((acc: number, item: any) => {
-                return acc + (item.product.price * item.qty);
+            cartItem?.reduce((acc: any, item: any) => {
+                if (item?.product?.discountType === "PERCENTAGE") {
+                    return acc + (item?.product?.price * item?.qty - ((item?.product?.price * item?.qty) * item?.product?.discount / 100))
+                } else {
+                    return acc + ((item?.product?.price - item?.product?.discount) * item?.qty)
+                }
             }, 0)
         );
-    }, [cartItem])
+     }, [cartItem])
 
     return (
         <div>

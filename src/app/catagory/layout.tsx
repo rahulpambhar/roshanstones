@@ -4,22 +4,22 @@ import Sidebar from "@/components/frontside/sidebar/Sidebar";
 
 const layout = ({ children, }: Readonly<{ children: React.ReactNode; }>) => {
   return (
-    <div>
+
+    <div className="grid h-600 ">
       <div className="grid">
-        <div className="grid">
-            <Filter />
-        </div>
-        <div className="flex border-b-2">
-          <div>
-            <Sidebar />
-          </div>
-          <div> {children}</div>
-        </div>
+        <Filter />
+      </div>
+      <div className="flex border-b-2 ">
         <div>
-          <Deals />
+          <Sidebar />
         </div>
+        <div> {children}</div>
+      </div>
+      <div>
+        <Deals />
       </div>
     </div>
+
   )
 };
 

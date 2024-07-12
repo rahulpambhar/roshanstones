@@ -28,7 +28,7 @@ export default function Example({ openPreview, setOpenPreview, product }: any) {
 
   const openCart = useAppSelector((state) => state?.utilReducer?.openCart);
   const cart = useAppSelector((state) => state?.cartReducer?.cart?.CartItem) || [];
-  const cartItem = cart?.find((item: any) => item?.productId === product.id);
+  const cartItem = cart?.find((item: any) => item?.productId === product?.id);
   const reviews = useAppSelector((state: any) => state?.reviewReducer?.reViewList) || [];
   const averageRating = useAppSelector((state: any) => state?.reviewReducer?.averageRating) || 0
 
@@ -64,7 +64,7 @@ export default function Example({ openPreview, setOpenPreview, product }: any) {
     e.preventDefault();
     try {
       const payload = {
-        review, ratings, reviewTitle, id: product.id
+        review, ratings, reviewTitle, id: product?.id
       }
       const data = await dispatch(reviewSubmit(payload))
       setReviewTitle("");
@@ -77,9 +77,9 @@ export default function Example({ openPreview, setOpenPreview, product }: any) {
   useEffect(() => {
     session &&
       (async () => {
-        const data = await dispatch(getReviews(product.id));
+        const data = await dispatch(getReviews(product?.id));
       })();
-  }, [session, product.id]);
+  }, [session, product?.id]);
 
 
 
@@ -92,7 +92,7 @@ export default function Example({ openPreview, setOpenPreview, product }: any) {
   }, [reviews, averageRating, openPreview])
 
   return (
-    <Transition.Root show={openPreview} as={Fragment}>
+    <Transition.Root show={true} as={Fragment}>
       <Dialog as="div" className="relative z-10" onClose={(e) => {
         setOpenPreview(e)
         setReviewTitle("");
@@ -143,14 +143,14 @@ export default function Example({ openPreview, setOpenPreview, product }: any) {
                       {/* <Image src={product.imageSrc} alt={product.imageAlt} className="object-cover object-center" /> */}
                     </div>
                     <div className="sm:col-span-8 lg:col-span-7">
-                      <h2 className="text-2xl font-bold text-gray-900 sm:pr-12">{product.name}</h2>
+                      <h2 className="text-2xl font-bold text-gray-900 sm:pr-12">{product?.name}</h2>
 
                       <section aria-labelledby="information-heading" className="mt-2">
                         <h3 id="information-heading" className="sr-only">
                           Product information
                         </h3>
 
-                        <p className="text-2xl text-gray-900">{product.price}</p>
+                        <p className="text-2xl text-gray-900">{product?.price}</p>
 
                         {/* Reviews */}
                         <div className="mt-6">
@@ -169,7 +169,7 @@ export default function Example({ openPreview, setOpenPreview, product }: any) {
                               ))}
                             </div>
                             <a href="#" className="ml-3 text-sm font-medium text-indigo-600 hover:text-indigo-500">
-                              {product.numReviews ? product.numReviews : 0} reviews
+                              {product?.numReviews ? product?.numReviews : 0} reviews
                             </a>
                           </div>
                         </div>
@@ -280,9 +280,9 @@ export default function Example({ openPreview, setOpenPreview, product }: any) {
                                                     </div> */}
 
                           {
-                            session && cart?.find((item: any) => item?.productId === product.id) ?
+                            session && cart?.find((item: any) => item?.productId === product?.id) ?
                               <div className="max-w-md mx-auto mt-12 p-6 bg-gray-100 rounded-lg shadow-xl">
-                                <h1 className="text-3xl font-semibold text-center mb-4 text-black">{cartItem.qty}</h1>
+                                <h1 className="text-3xl font-semibold text-center mb-4 text-black">{cartItem?.qty}</h1>
                                 <div className="flex justify-center">
 
                                   <button type='button'
@@ -338,7 +338,9 @@ export default function Example({ openPreview, setOpenPreview, product }: any) {
                           }
                         </form>
                       </section>
-                      <div className="tab-content relative ">
+
+
+                      <div className="tab-content relative border border-black bottom-1 mt-3 ">
                         <div
                           className={`tab-pane bg-grey-light py-10 transition-opacity md:py-16 ${activeTab === 'reviews' ? 'active' : ''}`}
                           role="tabpanel"
@@ -403,3 +405,4 @@ export default function Example({ openPreview, setOpenPreview, product }: any) {
     </Transition.Root>
   );
 }
+

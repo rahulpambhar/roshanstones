@@ -14,6 +14,8 @@ import Link from "next/link";
 import { IoIosRemove } from "react-icons/io";
 import { PiDotOutlineFill } from "react-icons/pi";
 
+const sidebarSubMenu = [{ name: "category" }, { name: "subCategory" }, { name: "products" },{ name: "top-selection" }];
+
 function SidebarMenu({
   name,
   icon,
@@ -122,15 +124,8 @@ const Admin_Sidebar = ({ closeSidebar }: any) => {
         </>
       ) : (
         <div className="w-full">
-          {/* logo and name */}
           <div className="flex justify-center items-center mb-4">
-            <Image
-              src="/image/loader_logo.svg"
-              alt=""
-              className=""
-              width={150}
-              height={100}
-            />
+
             <button className="lg:hidden float-end" onClick={closeSidebar}>
               <MdClose className="w-[30px] h-[30px]" />
             </button>
@@ -165,7 +160,21 @@ const Admin_Sidebar = ({ closeSidebar }: any) => {
               pathname === "admin/master/products" ||
               pathname === "admin/master/subCategory") && (
                 <div className=" grid gap-2 justify-center pl-[25px]">
-                  <Link
+
+                  {
+                    sidebarSubMenu?.map((item, index) =>
+                      <Link key={index} href={`/admin/master/${item.name}`}
+                        className={`flex  justify-start items-center hover:text-[--orange] ${pathname === `/admin//master/${item.name}`}
+                          ? " text-[--orange] " : "text-[--table]"}`}
+                      >
+                        <p>  <PiDotOutlineFill className="font-bold text-xlarge" />{" "} </p>
+                        <p className={`flex justify-center items-center text-small aleo hover:text-[--orange] ${pathname === `/admin//master/${item.name}`
+                          ? " text-[--orange] " : "text-[--text-color]"} `}  >
+                          {item.name}
+                        </p>
+                      </Link>
+                    )}
+                  {/* <Link
                     href="/admin/master/category"
                     className={`flex  justify-start items-center text-small aleo hover:text-[--orange] ${pathname === "/master/hsn_san"
                       ? " text-[--orange] "
@@ -183,45 +192,7 @@ const Admin_Sidebar = ({ closeSidebar }: any) => {
                     >
                       Categories
                     </p>
-                  </Link>
-                  <Link
-                    href="/admin/master/products"
-                    className={`flex  justify-start items-center hover:text-[--orange] ${pathname === "/master/category_subcategory"
-                      ? " text-[--orange] "
-                      : "text-[--table]"
-                      }`}
-                  >
-                    <p>
-                      <PiDotOutlineFill className=" font-bold text-xlarge" />{" "}
-                    </p>
-                    <p
-                      className={`flex justify-center items-center text-small aleo hover:text-[--orange]  ${pathname === "/master/category_subcategory"
-                        ? " text-[--orange] "
-                        : "text-[--text-color]"
-                        } `}
-                    >
-                      Products
-                    </p>
-                  </Link>
-                  <Link
-                    href="/admin/master/subCategory"
-                    className={`flex  justify-start items-center hover:text-[--orange] ${pathname === "/master/tradingaccount"
-                      ? " text-[--orange] "
-                      : "text-[--table]"
-                      }`}
-                  >
-                    <p>
-                      <PiDotOutlineFill className="font-bold text-xlarge" />{" "}
-                    </p>
-                    <p
-                      className={`flex justify-center items-center text-small aleo hover:text-[--orange] ${pathname === "/master/tradingaccount"
-                        ? " text-[--orange] "
-                        : "text-[--text-color]"
-                        } `}
-                    >
-                      SubCategory
-                    </p>
-                  </Link>
+                  </Link>*/}
                 </div>
               )}
 
@@ -236,7 +207,7 @@ const Admin_Sidebar = ({ closeSidebar }: any) => {
             />
             {sidebarOption === "Orders" && <div className=" grid gap-2 justify-center pl-[25px]">
               <Link
-                  href="/admin/orders/maintainOrders"
+                href="/admin/orders/maintainOrders"
                 className={`flex  justify-start items-center text-small aleo hover:text-[--orange] ${pathname === "/master/hsn_san"
                   ? " text-[--orange] "
                   : "text-[--table]"

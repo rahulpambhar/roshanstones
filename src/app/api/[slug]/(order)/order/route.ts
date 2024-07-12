@@ -33,7 +33,8 @@ export async function POST(request: Request) {
         if (!session) { return NextResponse.json({ st: false, statusCode: StatusCodes.BAD_REQUEST, data: [], msg: "You are not logged in", }); }
 
         const nextInvoice = await getNextInvoice("order")
-        const items = temp?.items     
+        const items = temp?.items
+
 
         const data: any = {
             invoiceNo: nextInvoice,
@@ -64,72 +65,71 @@ export async function POST(request: Request) {
 
         for (let x in items) {
             itemData.push({
-                qty: items.qty,
-                price: items.price,
-                productId: items.productId,
+                qty: items[x]?.qty,
+                price: items[x]?.price,
+                productId: items[x]?.productId,
                 createdBy: session?.user?.id
             })
         }
 
+        let createOrder: any = null;
+        createOrder = await prisma.order.create({ data })
 
-        let createOrder: any = null;      
-            createOrder = await prisma.order.create({ data })
+        // paypal.configure({
+        //     'mode': 'sandbox', //sandbox or live
+        //     'client_id': "paypal_client_id",
+        //     'client_secret': "paypal_client_secret"
+        // });
 
-            // paypal.configure({
-            //     'mode': 'sandbox', //sandbox or live
-            //     'client_id': "paypal_client_id",
-            //     'client_secret': "paypal_client_secret"
-            // });
-
-            // var create_payment_json = {
-            //     "intent": "sale",
-            //     "payer": {
-            //         "payment_method": "paypal"
-            //     },
-            //     "redirect_urls": {
-            //         "return_url": "http://localhost:3000/api/pay_success/success",
-            //         "cancel_url": "http://localhost:3000/api/pay_cancel/cancel"
-            //     },
-            //     "transactions": [{
-            //         "item_list": {
-            //             "items": [{
-            //                 "name": "item",
-            //                 "sku": "item",
-            //                 "price": "1.00",
-            //                 "currency": "USD",
-            //                 "quantity": 1
-            //             }]
-            //         },
-            //         "amount": {
-            //             "currency": "USD",
-            //             "total": "1.00"
-            //         },
-            //         "description": "This is the payment description."
-            //     }]
-            // };
-
-
-            // paypal.payment.create(create_payment_json, function (error, payment: any) {
-            //     if (error) {
-            //         console.log('error::: ', error);
-            //         throw error;
-            //     } else {
+        // var create_payment_json = {
+        //     "intent": "sale",
+        //     "payer": {
+        //         "payment_method": "paypal"
+        //     },
+        //     "redirect_urls": {
+        //         "return_url": "http://localhost:3000/api/pay_success/success",
+        //         "cancel_url": "http://localhost:3000/api/pay_cancel/cancel"
+        //     },
+        //     "transactions": [{
+        //         "item_list": {
+        //             "items": [{
+        //                 "name": "item",
+        //                 "sku": "item",
+        //                 "price": "1.00",
+        //                 "currency": "USD",
+        //                 "quantity": 1
+        //             }]
+        //         },
+        //         "amount": {
+        //             "currency": "USD",
+        //             "total": "1.00"
+        //         },
+        //         "description": "This is the payment description."
+        //     }]
+        // };
 
 
-            //         // for (let i = 0; i < payment?.links.length; i++) {
+        // paypal.payment.create(create_payment_json, function (error, payment: any) {
+        //     if (error) {
+        //         console.log('error::: ', error);
+        //         throw error;
+        //     } else {
 
-            //         //     if (payment?.links[i].rel === 'approval_url') {
-            //         //         console.log('payment.links[i].href::: ', payment?.links[i].rel, payment.links[i].href);
 
-            //         //         // NextResponse.redirect(payment.links[i].href)
-            //         // return NextResponse.json({ st: true, statusCode: StatusCodes.OK, data: payment, msg: "order created successfully!" });
-            //         //     }
+        //         // for (let i = 0; i < payment?.links.length; i++) {
 
-            //         // }
-            //         // console.log(payment);
-            //     }
-            // });
-        
+        //         //     if (payment?.links[i].rel === 'approval_url') {
+        //         //         console.log('payment.links[i].href::: ', payment?.links[i].rel, payment.links[i].href);
+
+        //         //         // NextResponse.redirect(payment.links[i].href)
+        //         // return NextResponse.json({ st: true, statusCode: StatusCodes.OK, data: payment, msg: "order created successfully!" });
+        //         //     }
+
+        //         // }
+        //         // console.log(payment);
+        //     }
+        // });
+
 
         if (!createOrder) {
             return NextResponse.json({ st: false, statusCode: StatusCodes.BAD_REQUEST, data: [], msg: "order created unsuccess!", });

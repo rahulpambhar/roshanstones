@@ -15,49 +15,47 @@ const Topselection = ({
   newbtn: boolean;
 }) => {
   return (
-    <>
-      <div className="border-2 border-[#CFCFCF] shadow-xl mx-5 my-2 bg-white pb-5">
-        <div>
-          {newbtn ? (
-            <div className="flex justify-between">
-              <div className="font-semibold text-base px-7 flex justify-center items-center bg-black text-white">
-                NEW
-              </div>
-              <div className="pr-5 pt-5">
-                <FaRegHeart className="w-7 h-7" />
-              </div>
+    <div className="border-2 border-[#CFCFCF] shadow-xl mx-5 my-2 bg-white pb-5 w-72 h-96 flex flex-col justify-between">
+      <div>
+        {newbtn ? (
+          <div className="flex justify-between">
+            <div className="font-semibold text-base px-7 flex justify-center items-center bg-black text-white">
+              NEW
             </div>
-          ) : (
-            <div className="flex justify-end">
-              <div className="pr-5 pt-5">
-                <FaRegHeart className="w-7 h-7" />
-              </div>
+            <div className="pr-5 pt-5">
+              <FaRegHeart className="w-7 h-7" />
             </div>
-          )}
-        </div>
-        <div className="pt-5 flex justify-center items-center">
-          {" "}
-          <img src={image} alt={label} />
-        </div>
-        <p className="text-2xl font-normal pt-5">
-          <label
-            htmlFor=""
-            className=" flex justify-center items-center gap-3 robto"
-          >
-            {label}
-          </label>
-        </p>
-        <p className="pt-3 text-base  flex justify-center items-center gap-3 roboto">
-          <FaStar />
-          {discription}
-        </p>
-        <div className="flex justify-center items-center pt-5 px-5">
-          <button className="bg-black text-white py-3 px-12 md:px-20 lg:px-24 roboto">
-            ADD TO CART
-          </button>
-        </div>
+          </div>
+        ) : (
+          <div className="flex justify-end">
+            <div className="pr-5 pt-5">
+              <FaRegHeart className="w-7 h-7" />
+            </div>
+          </div>
+        )}
       </div>
-    </>
+      <div className="pt-5 flex justify-center items-center flex-grow">
+        <Image
+          className="border border-black rounded object-cover"
+          src={`/products/${image}`}
+          alt={label}
+          width={200}
+          height={200}
+        />
+      </div>
+      <div className="px-5">
+        <p className="text-2xl font-normal pt-5 text-center">{label}</p>
+        <p className="pt-3 text-base text-center flex justify-center items-center gap-3">
+          <FaStar />
+          <span className="truncate">{discription}</span>
+        </p>
+      </div>
+      <div className="flex justify-center items-center pt-5">
+        <button className="bg-black text-white py-3 px-12 md:px-20 lg:px-24 roboto">
+          ADD TO CART
+        </button>
+      </div>
+    </div>
   );
 };
 

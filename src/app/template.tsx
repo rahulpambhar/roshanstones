@@ -12,6 +12,8 @@ import toast, { Toaster } from 'react-hot-toast';
 
 import Footer from "@/components/frontside/Footer/page";
 import Navbar from "@/components/frontside/Navbar/page";
+import "react-alice-carousel/lib/alice-carousel.css";
+
 import Example from "@/components/Cart";
 
 export default function Template({ children }: any) {

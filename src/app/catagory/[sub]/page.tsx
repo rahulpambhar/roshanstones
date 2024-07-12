@@ -43,7 +43,7 @@ const Page = () => {
 
   return (
     <>
-      <div className=" pt-5 border-l-2  ">
+      <div className=" pt-5  border-l-2 h-auto">
         <div className=" grid grid-cols-1 md:grid-cols-2  lg:grid-cols-4 pt-5  justify-center items-center">
           {products.length > 0
             ? currentpage.map((item, index) => {

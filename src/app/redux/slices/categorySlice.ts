@@ -4,7 +4,8 @@ import { apiUrl } from "../../../../env"
 
 
 const initialState: any = {
-    categories: [],
+    allCategories: [], // all categories
+    categories: [], // catagory whose have more than zero subcategory
     subCategories: [],
     productsList: [],
     products: [],
@@ -42,6 +43,7 @@ const categoriesReducer = createSlice({
                 state.status = 'succeeded';
                 state.categories = action.payload?.data;
 
+                let allCategories: any = []
                 let categories: any = []
                 let products: any = []
                 let subCategories: any = []
@@ -50,9 +52,11 @@ const categoriesReducer = createSlice({
                     if (action.payload?.data[x].SubCategory.length > 0) {
                         categories.push(action.payload?.data[x])
                     }
+                    allCategories.push({ id: action.payload?.data[x].id, name: action.payload?.data[x].name })
                 }
 
                 state.categories = categories
+                state.allCategories = allCategories
 
                 for (let x in state.categories) {
                     if (state.categories[x].SubCategory.length > 0) {

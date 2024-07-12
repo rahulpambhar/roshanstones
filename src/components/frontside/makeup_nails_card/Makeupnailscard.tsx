@@ -7,10 +7,7 @@ import { AnyARecord } from "dns";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
-
 import { Carousel } from "@material-tailwind/react";
-
-
 import Cart from "@/components/Cart";
 import ProductPreview from "@/components/ProductPreview";
 import { useAppSelector, useAppDispatch } from '@/app/redux/hooks';
@@ -29,14 +26,14 @@ const Makeupnailscard = ({ item, wish }: { item: any; wish: boolean }) => {
 
   const { data: session, status }: any = useSession();
   const [openPreview, setOpenPreview] = useState(false);
-  const [priview, sePriview] = useState < Product > ({} as Product)
+  const [priview, sePriview] = useState<Product>({} as Product)
 
   const cart = useAppSelector((state) => state?.cartReducer?.cart?.CartItem) || [];
   const openCart = useAppSelector((state) => state?.utilReducer?.openCart);
 
   const handelike = async () => {
     if (session) {
-      dispatch(addToWishList({ productId: item.id, }));     
+      dispatch(addToWishList({ productId: item.id, }));
     } else {
       dispatch(isLoginModel(true));
     }
@@ -50,7 +47,7 @@ const Makeupnailscard = ({ item, wish }: { item: any; wish: boolean }) => {
     } else {
       errorToast(data.payload.msg)
     }
-  } 
+  }
 
   return (
     <>
@@ -134,25 +131,25 @@ const Makeupnailscard = ({ item, wish }: { item: any; wish: boolean }) => {
           }
           <Link href={`/preview/${item.id}`}
             className="border rounded-full text-xs border-indigo-400 px-2 py-1 hover:border-amber-800 text-black"
-            // onClick={() => {
-            //   sePriview(item)
-            //   setOpenPreview(!openPreview)
-            // }}
+          // onClick={() => {
+          //   sePriview(item)
+          //   setOpenPreview(!openPreview)
+          // }}
           >
             Preview
           </Link>
           <Link href={`/buy/${item.id}`}
-            className="border rounded-full text-xs border-indigo-400 px-2 py-1 hover:border-amber-800 text-black"         
+            className="border rounded-full text-xs border-indigo-400 px-2 py-1 hover:border-amber-800 text-black"
           >
             Buy
           </Link>
         </div>
         <Cart />
-        <ProductPreview
+        {/* <ProductPreview
           openPreview={openPreview}
           product={priview}
           setOpenPreview={setOpenPreview}
-        />
+        /> */}
       </div>
     </>
   );

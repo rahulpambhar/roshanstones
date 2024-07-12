@@ -9,30 +9,8 @@ import Topselectionpart from "@/components/frontside/Topselectionpage/page";
 import Unitedfree from "@/components/frontside/Unitedfreepage/page";
 import OfferPage from "@/components/frontside/offer/page";
 import Singlenailpaint from "@/components/frontside/singlenailpaint/page";
-import Unitedfreecard from "@/components/frontside/unitedfree/page";
-import { useState } from "react";
-import { FaCircle, FaStar } from "react-icons/fa6";
 
-const careAboutItems1 = [
-  {
-    id: 1,
-    image: "/image/unitedfree.jpg",
-    label: "Absolut",
-    description: "Face and Body Lotion",
-  },
-  {
-    id: 2,
-    image: "/image/unitedfree.jpg",
-    label: "Absolut",
-    description: "Face and Body Lotion",
-  },
-  {
-    id: 3,
-    image: "/image/unitedfree.jpg",
-    label: "Absolut",
-    description: "Face and Body Lotion",
-  },
-];
+
 
 export default function Home() {
   return (

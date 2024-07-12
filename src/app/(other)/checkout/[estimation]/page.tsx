@@ -392,7 +392,7 @@ export default function Checkout({ params }: { params: { estimation: string } })
                     </div>
                 </div>
             </div>
-            <ProductPreview openPreview={openPreview} setOpenPreview={setOpenPreview} product={priview} />
+            {/* <ProductPreview openPreview={openPreview} setOpenPreview={setOpenPreview} product={priview} /> */}
         </div >
     );
 };

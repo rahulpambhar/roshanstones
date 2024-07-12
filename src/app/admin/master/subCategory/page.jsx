@@ -35,9 +35,9 @@ export default function BuyHistory() {
   const [deleteToggle, setDeleteToggle] = useState(false);
   const [categoryId, setCategoryId] = useState("");
   const dispatch = useDispatch();
-  const categories = useSelector((state) => state.categories.categories);
+  const allCategories = useSelector((state) => state.categories.allCategories);
 
-  const categoryOptions = categories.map((category) => ({
+  const categoryOptions = allCategories.map((category) => ({
     value: category.id,
     label: category.name,
   }));

@@ -63,7 +63,7 @@ export async function POST(request: Request) {
             const total = qty * price
             const discount = item?.discount
 
-            if (item.DiscountType === "PERCENTAGE") {
+            if (item.discountType === "PERCENTAGE") {
                 discountAmount += total * discount / 100
             } else {
                 discountAmount += qty * item?.discount
@@ -107,10 +107,10 @@ export async function POST(request: Request) {
             itemData.push({
                 qty: item?.orderedQty,
                 price: item?.price,
+                productId: item?.id,
                 createdBy: session?.user?.id
             })
         }
-
         const createTemp = await prisma.tempOrder.create({ data })
 
         if (!createTemp) {
@@ -122,7 +122,6 @@ export async function POST(request: Request) {
             ({
                 ...item,
                 tempOrderId: createTemp.id,
-                productId: createTemp.id,
             }))
         })
 

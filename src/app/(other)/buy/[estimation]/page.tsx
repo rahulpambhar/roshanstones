@@ -13,7 +13,6 @@ import { Product } from '../../../../../types/global';
 import { apiUrl } from '../../../../../env';
 import { truncate } from 'fs';
 import { actionTocartFunction_ } from '@/components/Cart';
-import { fetchCategories } from "../../../redux/slices/categorySlice";
 
 
 export default function Checkout({ params }: { params: { estimation: string } }) {
@@ -22,35 +21,47 @@ export default function Checkout({ params }: { params: { estimation: string } })
     const { data: session, status }: any = useSession();
     let [subTotal, setSubTotal] = useState(0)
     const [openPreview, setOpenPreview] = useState(false);
-    const [priview, sePriview] = useState < Product > ({} as Product)
+    const [priview, sePriview] = useState<Product>({} as Product)
 
     const dispatch = useAppDispatch();
     const router = useRouter()
     const id = params?.estimation;
-    let productForBuy: any = useAppSelector(
-        (state): any => state?.categories?.productsList?.find((product: any) => product.id === id)
-    ) || null;
 
-    productForBuy = productForBuy !== null ? [{ ...productForBuy, qty: 1 }] : [];
     const [order_, setOrder]: any = useState([])
 
-    useEffect(() => {
-        setOrder(productForBuy)
-    }, [id])
 
     useEffect(() => {
         setSubTotal(
             order_?.reduce((acc: any, item: any) => {
-                return acc + item?.price * item?.qty
+                if (item?.discountType === "PERCENTAGE") {
+                    return acc + (item?.price * item?.qty - ((item?.price * item?.qty) * item.discount / 100))
+                } else {
+                    return acc + ((item?.price - item?.discount) * item?.qty)
+                }
             }, 0)
         );
     }, [order_])
 
-    useEffect(() => {
-        dispatch(fetchCategories());
-        !session ? () => { return router.push('/') } : null
-    }, [dispatch]);
 
+
+    useEffect(() => {
+        !session ? () => { return router.push('/') } : null
+        const getProducts = async () => {
+            let response = await axios.get(`${apiUrl}/getProduct/products?id=${id}`);
+            const productForBuy = response.data;
+
+            if (productForBuy?.st) {
+                const productData = productForBuy.data;
+                if (productData) {
+                    productData.qty = 1;
+                    setOrder([productData]);
+                }
+            } else {
+                router.push('/');
+            }
+        }
+        getProducts();
+    }, [session]);
 
     return (
         <div className="flex flex-col min-h-screen py-12 md:py-24 items-center justify-start space-y-4">
@@ -196,7 +207,7 @@ export default function Checkout({ params }: { params: { estimation: string } })
                     </div>
                 }
             </div>
-            <ProductPreview openPreview={openPreview} setOpenPreview={setOpenPreview} product={priview} />
+            {/* <ProductPreview openPreview={openPreview} setOpenPreview={setOpenPreview} product={priview} /> */}
         </div >
     );
 };

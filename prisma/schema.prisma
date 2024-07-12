@@ -174,6 +174,9 @@ model Products {
     SubCategory   SubCategory? @relation("SubCategory", fields: [subCategoryId], references: [id])
     subCategoryId String?      @db.ObjectId
 
+    topSelected Boolean @default(false)
+    isNew Boolean @default(false)
+
     Review    Review[]
     whishlist Whishlist[]
 
@@ -278,7 +281,7 @@ model Order {
     acceptedAt   DateTime?
     dispatchedAt DateTime?
     deliveredAt  DateTime?
-    cancelledAt  DateTime?  
+    cancelledAt  DateTime?
 
     dueDays Int?
     dueDate DateTime? @db.Date()
@@ -430,7 +433,7 @@ model ReturnOrder {
     deliveredAt        DateTime?
     cancelledAt        DateTime?
     returnedAt         DateTime?
-    refundedAt         DateTime? 
+    refundedAt         DateTime?
 
     isBlocked  Boolean @default(false)
     attachment String?
@@ -482,7 +485,6 @@ model Review {
     id String @id @default(auto()) @map("_id") @db.ObjectId
 
     rating      Int?
-    reviewTitle String?
     review      String?
 
     user   User?   @relation(fields: [userId], references: [id])

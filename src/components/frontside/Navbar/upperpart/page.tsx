@@ -27,7 +27,7 @@ const Uppernav = () => {
   return (
     <div className="h-20 bg-black flex items-center justify-between lg:px-10 md:px-5 px-2">
       <div>
-        <Image src="/image/logo.svg" alt="Logo" width={150} height={150} />
+        <Image src="/image/HatchfulExport-All/pinterest_board_photo.png" alt="Logo" width={150} height={150} />
       </div>
       <div className="flex items-center md:gap-5 lg:gap-18">
         <div className="lg:w-[650px] md:w-[300px] h-10 bg-white hidden md:flex items-center rounded-md lg:pl-5">

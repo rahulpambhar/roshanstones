@@ -93,7 +93,7 @@ export async function POST(request: Request) {
             const total = qty * price
             const discount = item?.discount
 
-            if (item.DiscountType === "PERCENTAGE") {
+            if (item.discountType === "PERCENTAGE") {
                 discountAmount += total * discount / 100
             } else {
                 discountAmount += qty * item?.discount
